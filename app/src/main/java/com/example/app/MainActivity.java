@@ -269,21 +269,19 @@ public class MainActivity extends Activity {
 
     // Inject JavaScript fallback untuk geolocation
     private void injectGeolocationFallback() {
-        String jsCode = """
-            // Override geolocation if needed
-            if (!navigator.geolocation) {
-                navigator.geolocation = {
-                    getCurrentPosition: function(success, error) {
-                        error({code: 1, message: 'Geolocation not supported'});
-                    },
-                    watchPosition: function(success, error) {
-                        error({code: 1, message: 'Geolocation not supported'});
-                        return 1;
-                    },
-                    clearWatch: function(id) {}
-                };
-            }
-            """;
+        // Ganti text blocks dengan string biasa untuk kompatibilitas Java 8
+        String jsCode = "if (!navigator.geolocation) {" +
+            "navigator.geolocation = {" +
+            "getCurrentPosition: function(success, error) {" +
+            "error({code: 1, message: 'Geolocation not supported'});" +
+            "}," +
+            "watchPosition: function(success, error) {" +
+            "error({code: 1, message: 'Geolocation not supported'});" +
+            "return 1;" +
+            "}," +
+            "clearWatch: function(id) {}" +
+            "};" +
+            "}";
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             mWebView.evaluateJavascript(jsCode, null);
