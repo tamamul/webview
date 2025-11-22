@@ -4,9 +4,11 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
@@ -14,6 +16,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
@@ -29,6 +32,9 @@ public class MainActivity extends Activity {
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
     private final static int PERMISSION_REQUEST_CODE = 100;
 
+    // Loading progress
+    private ProgressBar progressBar;
+
     // Daftar permission yang diperlukan
     private String[] requiredPermissions = {
             android.Manifest.permission.ACCESS_FINE_LOCATION,
@@ -43,7 +49,9 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
+        // Initialize views
         mWebView = findViewById(R.id.activity_main_webview);
+        progressBar = findViewById(R.id.progressBar);
         
         // Cek dan minta permission sebelum setup WebView
         if (checkAndRequestPermissions()) {
@@ -115,7 +123,7 @@ public class MainActivity extends Activity {
         // Enable database
         webSettings.setDatabaseEnabled(true);
         
-        // Enable geolocation - SANGAT PENTING
+        // Enable geolocation
         webSettings.setGeolocationEnabled(true);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
             webSettings.setGeolocationDatabasePath(getFilesDir().getPath());
@@ -133,17 +141,6 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
-
-  // ENABLE GOOGLE AUTO-FILL
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        webSettings.setSaveFormData(true);
-        mWebView.setAutofillHints(View.AUTOFILL_HINT_PASSWORD);
-    }
-    
-    // Important untuk auto-fill
-    webSettings.setSavePassword(true);
-    mWebView.setWebViewClient(new MyWebViewClient());
-}
         
         // Cache settings
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
@@ -152,26 +149,47 @@ public class MainActivity extends Activity {
         webSettings.setAllowFileAccess(true);
         webSettings.setAllowContentAccess(true);
         
-        // Important for camera access and WebRTC
+        // CRITICAL FOR CAMERA: Enable media playback without gesture
         webSettings.setMediaPlaybackRequiresUserGesture(false);
         
-        // Enable WebRTC features
+        // Enable WebRTC - Important for camera access
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             webSettings.setAllowFileAccessFromFileURLs(true);
             webSettings.setAllowUniversalAccessFromFileURLs(true);
         }
         
-        // Set WebViewClient to handle links internally
+        // ENABLE GOOGLE AUTO-FILL
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            webSettings.setSaveFormData(true);
+        }
+        webSettings.setSavePassword(true);
+        
+        // Set WebViewClient to handle links internally dengan loading
         mWebView.setWebViewClient(new MyWebViewClient());
         
-        // Set WebChromeClient for permissions, file upload, etc.
+        // Set WebChromeClient untuk progress dan permissions
         mWebView.setWebChromeClient(new MyWebChromeClient());
         
-        // Load URL hanya jika permission sudah di-check
+        // Load URL
         mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
     }
 
     private class MyWebViewClient extends WebViewClient {
+        
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            super.onPageStarted(view, url, favicon);
+            // Tampilkan progress bar
+            progressBar.setVisibility(View.VISIBLE);
+        }
+        
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            // Sembunyikan progress bar
+            progressBar.setVisibility(View.GONE);
+        }
+
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             // Handle all URLs within WebView
@@ -202,26 +220,20 @@ public class MainActivity extends Activity {
             }
             return false;
         }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-            // Inject JavaScript untuk handle camera dan geolocation
-            injectCameraAndGeolocationFallback();
-        }
-
-        @Override
-public void onPageFinished(WebView view, String url) {
-    super.onPageFinished(view, url);
-    
-    // Force trigger auto-fill
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        view.autofill(AccessibilityNodeInfo.EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY);
     }
-}
-    
 
     private class MyWebChromeClient extends WebChromeClient {
+        
+        // Update progress bar
+        @Override
+        public void onProgressChanged(WebView view, int newProgress) {
+            super.onProgressChanged(view, newProgress);
+            
+            // Update progress bar
+            if (newProgress < 100) {
+                progressBar.setProgress(newProgress);
+            }
+        }
         
         // Handle geolocation permission prompt
         @Override
@@ -230,53 +242,19 @@ public void onPageFinished(WebView view, String url) {
             callback.invoke(origin, true, false);
         }
         
-        // Handle permission requests (camera, microphone, location) - FIXED VERSION
+        // Handle permission requests (camera, microphone)
         @Override
         public void onPermissionRequest(final PermissionRequest request) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // Grant semua permission yang diminta untuk WebRTC/camera
-                    String[] requestedResources = request.getResources();
-                    
-                    // Cek jika permission sudah diberikan
-                    boolean canGrant = true;
-                    for (String resource : requestedResources) {
-                        if (resource.equals(PermissionRequest.RESOURCE_VIDEO_CAPTURE) || 
-                            resource.equals(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
-                            
-                            if (!hasCameraAndAudioPermission()) {
-                                canGrant = false;
-                                break;
-                            }
-                        }
+            // Langsung grant permission tanpa delay
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Grant semua permission yang diminta
+                        request.grant(request.getResources());
                     }
-                    
-                    if (canGrant) {
-                        // Grant semua resources yang diminta
-                        request.grant(requestedResources);
-                        Toast.makeText(MainActivity.this, "Akses kamera diberikan", Toast.LENGTH_SHORT).show();
-                    } else {
-                        // Jika belum ada permission, minta lagi
-                        Toast.makeText(MainActivity.this, "Memberikan akses kamera...", Toast.LENGTH_SHORT).show();
-                        requestPermissions(requiredPermissions, PERMISSION_REQUEST_CODE);
-                        
-                        // Tetap grant setelah delay untuk kasus tertentu
-                        mWebView.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                request.grant(requestedResources);
-                            }
-                        }, 1000);
-                    }
-                }
-            });
-        }
-        
-        // Handle permission request cancel
-        @Override
-        public void onPermissionRequestCanceled(PermissionRequest request) {
-            Toast.makeText(MainActivity.this, "Akses kamera ditolak", Toast.LENGTH_SHORT).show();
+                });
+            }
         }
 
         // For file upload (Lollipop and above)
@@ -311,54 +289,6 @@ public void onPageFinished(WebView view, String url) {
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.setType("*/*");
             startActivityForResult(Intent.createChooser(intent, "File Chooser"), FILE_CHOOSER_RESULT_CODE);
-        }
-    }
-
-    // Cek apakah permission kamera dan audio sudah diberikan
-    private boolean hasCameraAndAudioPermission() {
-        return ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
-               ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    // Inject JavaScript fallback untuk camera dan geolocation
-    private void injectCameraAndGeolocationFallback() {
-        String jsCode = 
-            "try {" +
-            "// Fix untuk getUserMedia" +
-            "if (navigator.mediaDevices && !navigator.mediaDevices.getUserMedia) {" +
-            "navigator.mediaDevices.getUserMedia = function(constraints) {" +
-            "return new Promise(function(resolve, reject) {" +
-            "navigator.getUserMedia(constraints, resolve, reject);" +
-            "});" +
-            "};" +
-            "}" +
-            
-            "// Backup untuk navigator.getUserMedia lama" +
-            "if (!navigator.getUserMedia) {" +
-            "navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;" +
-            "}" +
-            
-            "// Fix untuk geolocation" +
-            "if (!navigator.geolocation) {" +
-            "navigator.geolocation = {" +
-            "getCurrentPosition: function(success, error) {" +
-            "if (error) error({code: 1, message: 'Geolocation not supported'});" +
-            "}," +
-            "watchPosition: function(success, error) {" +
-            "if (error) error({code: 1, message: 'Geolocation not supported'});" +
-            "return 1;" +
-            "}," +
-            "clearWatch: function(id) {}" +
-            "};" +
-            "}" +
-            
-            "console.log('Camera and geolocation fixes applied');" +
-            "} catch(e) { console.log('Fix error: ' + e); }";
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mWebView.evaluateJavascript(jsCode, null);
-        } else {
-            mWebView.loadUrl("javascript:" + jsCode);
         }
     }
 
@@ -397,8 +327,6 @@ public void onPageFinished(WebView view, String url) {
         super.onResume();
         if (mWebView != null) {
             mWebView.onResume();
-            // Refresh halaman saat resume untuk memastikan kamera bekerja
-            mWebView.reload();
         }
     }
 
