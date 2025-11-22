@@ -3,21 +3,39 @@ package com.example.app;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity {
 
     private WebView mWebView;
     private ValueCallback<Uri[]> uploadMessage;
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
+    private final static int PERMISSION_REQUEST_CODE = 100;
+
+    // Daftar permission yang diperlukan
+    private String[] requiredPermissions = {
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            android.Manifest.permission.CAMERA,
+            android.Manifest.permission.RECORD_AUDIO
+    };
 
     @Override
     @SuppressLint("SetJavaScriptEnabled")
@@ -26,8 +44,63 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         
         mWebView = findViewById(R.id.activity_main_webview);
-        setupWebView();
-        mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
+        
+        // Cek dan minta permission sebelum setup WebView
+        if (checkAndRequestPermissions()) {
+            setupWebView();
+        }
+    }
+
+    private boolean checkAndRequestPermissions() {
+        List<String> permissionsNeeded = new ArrayList<>();
+
+        // Cek setiap permission
+        for (String permission : requiredPermissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(permission);
+            }
+        }
+
+        // Jika ada permission yang belum granted, minta izin
+        if (!permissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    permissionsNeeded.toArray(new String[0]),
+                    PERMISSION_REQUEST_CODE
+            );
+            return false;
+        }
+        
+        // Semua permission sudah granted
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            boolean allGranted = true;
+            
+            // Cek apakah semua permission di-grant
+            for (int grantResult : grantResults) {
+                if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+            
+            if (allGranted) {
+                // Semua permission granted, setup WebView
+                setupWebView();
+                mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
+            } else {
+                // Beberapa permission ditolak
+                Toast.makeText(this, "Beberapa fitur mungkin tidak berfungsi tanpa izin yang diperlukan", Toast.LENGTH_LONG).show();
+                setupWebView();
+                mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
+            }
+        }
     }
 
     private void setupWebView() {
@@ -42,7 +115,7 @@ public class MainActivity extends Activity {
         // Enable database
         webSettings.setDatabaseEnabled(true);
         
-        // Enable geolocation
+        // Enable geolocation - SANGAT PENTING
         webSettings.setGeolocationEnabled(true);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
             webSettings.setGeolocationDatabasePath(getFilesDir().getPath());
@@ -61,7 +134,7 @@ public class MainActivity extends Activity {
             webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
         
-        // Cache settings - HAPUS method yang deprecated
+        // Cache settings
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
         
         // Enable other important settings
@@ -77,6 +150,9 @@ public class MainActivity extends Activity {
         
         // Set WebChromeClient for permissions, file upload, etc.
         mWebView.setWebChromeClient(new MyWebChromeClient());
+        
+        // Load URL hanya jika permission sudah di-check
+        mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
     }
 
     private class MyWebViewClient extends WebViewClient {
@@ -114,23 +190,46 @@ public class MainActivity extends Activity {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            // Page finished loading
+            // Inject JavaScript untuk handle geolocation error
+            injectGeolocationFallback();
         }
     }
 
     private class MyWebChromeClient extends WebChromeClient {
         
+        // Handle geolocation permission prompt
+        @Override
+        public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+            // Always grant location permission
+            callback.invoke(origin, true, false);
+        }
+        
         // Handle permission requests (camera, microphone, location)
         @Override
         public void onPermissionRequest(final PermissionRequest request) {
-            // Grant all permissions untuk camera, microphone, location
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // Grant semua permission yang diminta
-                    request.grant(request.getResources());
+            // Check if we have the required permissions
+            boolean hasPermissions = true;
+            for (String resource : request.getResources()) {
+                if (resource.equals(PermissionRequest.RESOURCE_VIDEO_CAPTURE) && 
+                    ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    hasPermissions = false;
+                    break;
                 }
-            });
+                if (resource.equals(PermissionRequest.RESOURCE_AUDIO_CAPTURE) && 
+                    ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    hasPermissions = false;
+                    break;
+                }
+            }
+            
+            if (hasPermissions) {
+                // Grant all requested permissions
+                request.grant(request.getResources());
+            } else {
+                // Permissions not granted, show message
+                Toast.makeText(MainActivity.this, "Izin diperlukan untuk fitur ini", Toast.LENGTH_SHORT).show();
+                request.deny();
+            }
         }
 
         // For file upload (Lollipop and above)
@@ -165,6 +264,31 @@ public class MainActivity extends Activity {
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.setType("*/*");
             startActivityForResult(Intent.createChooser(intent, "File Chooser"), FILE_CHOOSER_RESULT_CODE);
+        }
+    }
+
+    // Inject JavaScript fallback untuk geolocation
+    private void injectGeolocationFallback() {
+        String jsCode = """
+            // Override geolocation if needed
+            if (!navigator.geolocation) {
+                navigator.geolocation = {
+                    getCurrentPosition: function(success, error) {
+                        error({code: 1, message: 'Geolocation not supported'});
+                    },
+                    watchPosition: function(success, error) {
+                        error({code: 1, message: 'Geolocation not supported'});
+                        return 1;
+                    },
+                    clearWatch: function(id) {}
+                };
+            }
+            """;
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mWebView.evaluateJavascript(jsCode, null);
+        } else {
+            mWebView.loadUrl("javascript:" + jsCode);
         }
     }
 
