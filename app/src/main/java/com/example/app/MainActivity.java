@@ -4,11 +4,9 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
 import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
@@ -16,7 +14,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
@@ -32,8 +29,7 @@ public class MainActivity extends Activity {
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
     private final static int PERMISSION_REQUEST_CODE = 100;
 
-    // Loading progress
-    private ProgressBar progressBar;
+    // HAPUS ProgressBar declaration
 
     // Daftar permission yang diperlukan
     private String[] requiredPermissions = {
@@ -49,9 +45,10 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        // Initialize views
+        // Initialize WebView saja
         mWebView = findViewById(R.id.activity_main_webview);
-        progressBar = findViewById(R.id.progressBar);
+        
+        // HAPUS progressBar initialization
         
         // Cek dan minta permission sebelum setup WebView
         if (checkAndRequestPermissions()) {
@@ -164,10 +161,10 @@ public class MainActivity extends Activity {
         }
         webSettings.setSavePassword(true);
         
-        // Set WebViewClient to handle links internally dengan loading
+        // Set WebViewClient to handle links internally
         mWebView.setWebViewClient(new MyWebViewClient());
         
-        // Set WebChromeClient untuk progress dan permissions
+        // Set WebChromeClient untuk permissions
         mWebView.setWebChromeClient(new MyWebChromeClient());
         
         // Load URL
@@ -176,20 +173,6 @@ public class MainActivity extends Activity {
 
     private class MyWebViewClient extends WebViewClient {
         
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-            // Tampilkan progress bar
-            progressBar.setVisibility(View.VISIBLE);
-        }
-        
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-            // Sembunyikan progress bar
-            progressBar.setVisibility(View.GONE);
-        }
-
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             // Handle all URLs within WebView
@@ -223,17 +206,6 @@ public class MainActivity extends Activity {
     }
 
     private class MyWebChromeClient extends WebChromeClient {
-        
-        // Update progress bar
-        @Override
-        public void onProgressChanged(WebView view, int newProgress) {
-            super.onProgressChanged(view, newProgress);
-            
-            // Update progress bar
-            if (newProgress < 100) {
-                progressBar.setProgress(newProgress);
-            }
-        }
         
         // Handle geolocation permission prompt
         @Override
