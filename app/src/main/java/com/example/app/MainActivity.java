@@ -43,39 +43,59 @@ public class MainActivity extends Activity {
             android.Manifest.permission.RECORD_AUDIO
     };
 
-    @Override
-    @SuppressLint("SetJavaScriptEnabled")
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+@Override
+@SuppressLint("SetJavaScriptEnabled")
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+    
+    // Initialize WebView
+    mWebView = findViewById(R.id.activity_main_webview);
+    
+    // Get credentials dari LoginActivity atau SharedPreferences
+    getCredentials();
+    
+    // Cek dan minta permission sebelum setup WebView
+    if (checkAndRequestPermissions()) {
+        setupWebView();
         
-        // Initialize WebView
-        mWebView = findViewById(R.id.activity_main_webview);
+        // === TAMBAH INI ===
+        // Cek apakah ada API token, jika ada langsung ke dashboard
+        SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
+        String apiToken = prefs.getString("api_token", "");
         
-        // Get credentials dari LoginActivity atau SharedPreferences
-        getCredentials();
-        
-        // Cek dan minta permission sebelum setup WebView
-        if (checkAndRequestPermissions()) {
-            setupWebView();
-        }
-    }
-
-    private void getCredentials() {
-        // Coba ambil dari Intent (langsung dari LoginActivity)
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("username") && intent.hasExtra("password")) {
-            username = intent.getStringExtra("username");
-            password = intent.getStringExtra("password");
+        if (!apiToken.isEmpty()) {
+            // Langsung buka dashboard, bypass login page
+            mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/dashboard");
         } else {
-            // Fallback: ambil dari SharedPreferences
-            SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
-            username = prefs.getString("username", "");
-            password = prefs.getString("password", "");
+            // Fallback ke URL biasa (auto login via JavaScript)
+            mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
         }
-        
-        Toast.makeText(this, "Selamat datang " + username, Toast.LENGTH_SHORT).show();
     }
+}
+
+private void getCredentials() {
+    // Coba ambil dari Intent (langsung dari LoginActivity)
+    Intent intent = getIntent();
+    if (intent != null && intent.hasExtra("username") && intent.hasExtra("password")) {
+        username = intent.getStringExtra("username");
+        password = intent.getStringExtra("password");
+        
+        // Juga cek apakah ada API token
+        if (intent.hasExtra("api_token")) {
+            String apiToken = intent.getStringExtra("api_token");
+            SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
+            prefs.edit().putString("api_token", apiToken).apply();
+        }
+    } else {
+        // Fallback: ambil dari SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
+        username = prefs.getString("username", "");
+        password = prefs.getString("password", "");
+    }
+    
+    Toast.makeText(this, "Selamat datang " + username, Toast.LENGTH_SHORT).show();
+}
 
     private boolean checkAndRequestPermissions() {
         List<String> permissionsNeeded = new ArrayList<>();
