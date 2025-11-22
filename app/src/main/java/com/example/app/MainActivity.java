@@ -189,12 +189,21 @@ public class MainActivity extends Activity {
 public void onPageFinished(WebView view, String url) {
     super.onPageFinished(view, url);
     
-    // AUTO LOGIN (bukan cuma auto-fill)
+    // Auto login hanya jika:
+    // 1. Ada credentials
+    // 2. Dan di halaman login (bukan dashboard/halaman lain)
     if (!username.isEmpty() && !password.isEmpty()) {
-        autoLoginToWebsite(); // PANGGIL METHOD BARU
+        if (url.contains("/present/public") && !url.contains("dashboard")) {
+            // Tunggu sebentar lalu execute auto login
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    autoLoginToWebsite();
+                }
+            }, 1000);
+        }
     }
 }
-
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             // Handle all URLs within WebView
@@ -286,44 +295,71 @@ public void onPageFinished(WebView view, String url) {
         }
     }
 
-    // Method untuk auto-fill credentials ke form login
-    // Method BARU - AUTO LOGIN (gantikan yang lama)
+    // Method BARU - AUTO LOGIN via POST
 private void autoLoginToWebsite() {
     String jsCode = 
         "setTimeout(function() {" +
+        "  console.log('Starting auto login...');" +
+        "  " +
+        "  // Cari form dengan action yang mengandung 'login'" +
         "  var loginForm = document.querySelector('form[action*=\"login\"]');" +
+        "  " +
         "  if (loginForm) {" +
-        "    var emailInput = document.querySelector('input[name=\"login\"], input[type=\"email\"]');" +
-        "    var passwordInput = document.querySelector('input[name=\"password\"], input[type=\"password\"]');" +
-        "    var submitBtn = document.querySelector('button[type=\"submit\"], .btn-neon');" +
+        "    console.log('Login form found:', loginForm.action);" +
+        "    " +
+        "    // Input fields berdasarkan name attribute" +
+        "    var emailInput = document.querySelector('input[name=\"login\"]');" +
+        "    var passwordInput = document.querySelector('input[name=\"password\"]');" +
+        "    var rememberCheckbox = document.querySelector('input[name=\"remember\"]');" +
+        "    " +
+        "    console.log('Email input:', emailInput);" +
+        "    console.log('Password input:', passwordInput);" +
         "    " +
         "    if (emailInput && passwordInput) {" +
         "      // Isi credentials" +
         "      emailInput.value = '" + username + "';" +
         "      passwordInput.value = '" + password + "';" +
         "      " +
-        "      // Trigger events untuk validasi" +
-        "      emailInput.dispatchEvent(new Event('input', { bubbles: true }));" +
-        "      passwordInput.dispatchEvent(new Event('input', { bubbles: true }));" +
-        "      emailInput.dispatchEvent(new Event('change', { bubbles: true }));" +
-        "      passwordInput.dispatchEvent(new Event('change', { bubbles: true }));" +
+        "      // Centang remember me jika ada" +
+        "      if (rememberCheckbox) {" +
+        "        rememberCheckbox.checked = true;" +
+        "      }" +
         "      " +
-        "      console.log('Auto-fill completed for: ' + '" + username + "');" +
+        "      // Trigger semua events yang diperlukan" +
+        "      var events = ['input', 'change', 'blur', 'focus'];" +
+        "      events.forEach(function(eventType) {" +
+        "        var event = new Event(eventType, { bubbles: true });" +
+        "        emailInput.dispatchEvent(event);" +
+        "        passwordInput.dispatchEvent(event);" +
+        "      });" +
         "      " +
-        "      // Auto submit setelah 2 detik" +
+        "      console.log('Credentials filled, submitting form...');" +
+        "      " +
+        "      // Submit form langsung (tunggu 1 detik dulu)" +
         "      setTimeout(function() {" +
-        "        if (submitBtn) {" +
-        "          submitBtn.click();" +
-        "          console.log('Auto login submitted');" +
-        "        } else if (loginForm) {" +
-        "          loginForm.submit();" +
-        "        }" +
-        "      }, 2000);" +
+        "        loginForm.submit();" +
+        "        console.log('Form submitted!');" +
+        "      }, 1000);" +
+        "      " +
+        "    } else {" +
+        "      console.log('Required input fields not found');" +
         "    }" +
         "  } else {" +
-        "    console.log('Login form not found');" +
+        "    console.log('No login form found on this page');" +
+        "    " +
+        "    // Fallback: coba cari form apapun dengan input email & password" +
+        "    var forms = document.querySelectorAll('form');" +
+        "    forms.forEach(function(form, index) {" +
+        "      var hasEmail = form.querySelector('input[type=\"email\"], input[name*=\"login\"]');" +
+        "      var hasPassword = form.querySelector('input[type=\"password\"]');" +
+        "      " +
+        "      if (hasEmail && hasPassword) {" +
+        "        console.log('Found potential login form at index:', index);" +
+        "        loginForm = form;" +
+        "      }" +
+        "    });" +
         "  }" +
-        "}, 1500);";
+        "}, 500);"; // Waktu tunggu lebih pendek
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
         mWebView.evaluateJavascript(jsCode, null);
@@ -331,6 +367,7 @@ private void autoLoginToWebsite() {
         mWebView.loadUrl("javascript:" + jsCode);
     }
 }
+    
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
