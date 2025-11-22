@@ -186,14 +186,14 @@ public class MainActivity extends Activity {
     private class MyWebViewClient extends WebViewClient {
         
         @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-            
-            // Auto-fill credentials setelah halaman selesai load
-            if (!username.isEmpty() && !password.isEmpty()) {
-                autoFillCredentials();
-            }
-        }
+public void onPageFinished(WebView view, String url) {
+    super.onPageFinished(view, url);
+    
+    // AUTO LOGIN (bukan cuma auto-fill)
+    if (!username.isEmpty() && !password.isEmpty()) {
+        autoLoginToWebsite(); // PANGGIL METHOD BARU
+    }
+}
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -287,32 +287,50 @@ public class MainActivity extends Activity {
     }
 
     // Method untuk auto-fill credentials ke form login
-    private void autoFillCredentials() {
-        String jsCode = 
-            "setTimeout(function() {" +
-            "  var inputs = document.querySelectorAll('input');" +
-            "  inputs.forEach(function(input) {" +
-            "    if (input.type === 'email' || input.type === 'text' || input.name.includes('email') || input.name.includes('username')) {" +
-            "      input.value = '" + username + "';" +
-            "      input.dispatchEvent(new Event('input', { bubbles: true }));" +
-            "      input.dispatchEvent(new Event('change', { bubbles: true }));" +
-            "    }" +
-            "    if (input.type === 'password') {" +
-            "      input.value = '" + password + "';" +
-            "      input.dispatchEvent(new Event('input', { bubbles: true }));" +
-            "      input.dispatchEvent(new Event('change', { bubbles: true }));" +
-            "    }" +
-            "  });" +
-            "  console.log('Auto-fill completed for: ' + '" + username + "');" +
-            "}, 1500);";
+    // Method BARU - AUTO LOGIN (gantikan yang lama)
+private void autoLoginToWebsite() {
+    String jsCode = 
+        "setTimeout(function() {" +
+        "  var loginForm = document.querySelector('form[action*=\"login\"]');" +
+        "  if (loginForm) {" +
+        "    var emailInput = document.querySelector('input[name=\"login\"], input[type=\"email\"]');" +
+        "    var passwordInput = document.querySelector('input[name=\"password\"], input[type=\"password\"]');" +
+        "    var submitBtn = document.querySelector('button[type=\"submit\"], .btn-neon');" +
+        "    " +
+        "    if (emailInput && passwordInput) {" +
+        "      // Isi credentials" +
+        "      emailInput.value = '" + username + "';" +
+        "      passwordInput.value = '" + password + "';" +
+        "      " +
+        "      // Trigger events untuk validasi" +
+        "      emailInput.dispatchEvent(new Event('input', { bubbles: true }));" +
+        "      passwordInput.dispatchEvent(new Event('input', { bubbles: true }));" +
+        "      emailInput.dispatchEvent(new Event('change', { bubbles: true }));" +
+        "      passwordInput.dispatchEvent(new Event('change', { bubbles: true }));" +
+        "      " +
+        "      console.log('Auto-fill completed for: ' + '" + username + "');" +
+        "      " +
+        "      // Auto submit setelah 2 detik" +
+        "      setTimeout(function() {" +
+        "        if (submitBtn) {" +
+        "          submitBtn.click();" +
+        "          console.log('Auto login submitted');" +
+        "        } else if (loginForm) {" +
+        "          loginForm.submit();" +
+        "        }" +
+        "      }, 2000);" +
+        "    }" +
+        "  } else {" +
+        "    console.log('Login form not found');" +
+        "  }" +
+        "}, 1500);";
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mWebView.evaluateJavascript(jsCode, null);
-        } else {
-            mWebView.loadUrl("javascript:" + jsCode);
-        }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        mWebView.evaluateJavascript(jsCode, null);
+    } else {
+        mWebView.loadUrl("javascript:" + jsCode);
     }
-
+}
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
