@@ -109,73 +109,68 @@ public class MainActivity extends Activity {
     }
 
     private void setupWebView() {
-        WebSettings webSettings = mWebView.getSettings();
-        
-        // Enable JavaScript
-        webSettings.setJavaScriptEnabled(true);
-        
-        // Enable DOM storage
-        webSettings.setDomStorageEnabled(true);
-        
-        // Enable database
-        webSettings.setDatabaseEnabled(true);
-        
-        // Enable geolocation
-        webSettings.setGeolocationEnabled(true);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            webSettings.setGeolocationDatabasePath(getFilesDir().getPath());
-        }
-        
-        // Enable zoom controls
-        webSettings.setBuiltInZoomControls(true);
-        webSettings.setDisplayZoomControls(false);
-        
-        // Enable wide viewport
-        webSettings.setUseWideViewPort(true);
-        webSettings.setLoadWithOverviewMode(true);
-        
-        // Enable mixed content (for HTTP/HTTPS)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        }
-        
-        // Cache settings
-        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        
-        // Enable other important settings
-        webSettings.setAllowFileAccess(true);
-        webSettings.setAllowContentAccess(true);
-        
-        // CRITICAL FOR CAMERA: Enable media playback without gesture
-        webSettings.setMediaPlaybackRequiresUserGesture(false);
-        
-        // Enable WebRTC - Important for camera access
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            webSettings.setAllowFileAccessFromFileURLs(true);
-            webSettings.setAllowUniversalAccessFromFileURLs(true);
-        }
-           // FORCE GOOGLE AUTOFILL
+    WebSettings webSettings = mWebView.getSettings();
+    
+    // Enable JavaScript
+    webSettings.setJavaScriptEnabled(true);
+    
+    // Enable DOM storage
+    webSettings.setDomStorageEnabled(true);
+    
+    // Enable database
+    webSettings.setDatabaseEnabled(true);
+    
+    // Enable geolocation
+    webSettings.setGeolocationEnabled(true);
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
+        webSettings.setGeolocationDatabasePath(getFilesDir().getPath());
+    }
+    
+    // Enable zoom controls
+    webSettings.setBuiltInZoomControls(true);
+    webSettings.setDisplayZoomControls(false);
+    
+    // Enable wide viewport
+    webSettings.setUseWideViewPort(true);
+    webSettings.setLoadWithOverviewMode(true);
+    
+    // Enable mixed content (for HTTP/HTTPS)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+    }
+    
+    // Cache settings
+    webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+    
+    // Enable other important settings
+    webSettings.setAllowFileAccess(true);
+    webSettings.setAllowContentAccess(true);
+    
+    // CRITICAL FOR CAMERA: Enable media playback without gesture
+    webSettings.setMediaPlaybackRequiresUserGesture(false);
+    
+    // Enable WebRTC - Important for camera access
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        webSettings.setAllowFileAccessFromFileURLs(true);
+        webSettings.setAllowUniversalAccessFromFileURLs(true);
+    }
+    
+    // ENABLE GOOGLE AUTOFILL (HAPUS DUPLIKASI)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         webSettings.setSaveFormData(true);
         mWebView.setAutofillHints(View.AUTOFILL_HINT_PASSWORD);
     }
     webSettings.setSavePassword(true);
-        // ENABLE GOOGLE AUTO-FILL
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            webSettings.setSaveFormData(true);
-        }
-        webSettings.setSavePassword(true);
-        
-        // Set WebViewClient to handle links internally
-        mWebView.setWebViewClient(new MyWebViewClient());
-        
-        // Set WebChromeClient untuk permissions
-        mWebView.setWebChromeClient(new MyWebChromeClient());
-        
-        // Load URL
-        mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
-    }
-
+    
+    // Set WebViewClient to handle links internally
+    mWebView.setWebViewClient(new MyWebViewClient());
+    
+    // Set WebChromeClient untuk permissions
+    mWebView.setWebChromeClient(new MyWebChromeClient());
+    
+    // Load URL
+    mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
+}
     private class MyWebViewClient extends WebViewClient {
         
         @Override
