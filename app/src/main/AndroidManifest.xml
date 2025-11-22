@@ -29,16 +29,23 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
 
+        <!-- Login Activity (NEW - LAUNCHER) -->
         <activity
-            android:name="com.example.app.MainActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:name=".LoginActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize">
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Main Activity (CHANGE exported to false) -->
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- Provider for file sharing -->
         <provider
