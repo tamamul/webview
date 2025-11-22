@@ -22,6 +22,8 @@ import androidx.core.content.ContextCompat;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.view.View;
+
 public class MainActivity extends Activity {
 
     private WebView mWebView;
