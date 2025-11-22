@@ -133,6 +133,17 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
+
+  // ENABLE GOOGLE AUTO-FILL
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        webSettings.setSaveFormData(true);
+        mWebView.setAutofillHints(View.AUTOFILL_HINT_PASSWORD);
+    }
+    
+    // Important untuk auto-fill
+    webSettings.setSavePassword(true);
+    mWebView.setWebViewClient(new MyWebViewClient());
+}
         
         // Cache settings
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
@@ -198,7 +209,17 @@ public class MainActivity extends Activity {
             // Inject JavaScript untuk handle camera dan geolocation
             injectCameraAndGeolocationFallback();
         }
+
+        @Override
+public void onPageFinished(WebView view, String url) {
+    super.onPageFinished(view, url);
+    
+    // Force trigger auto-fill
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        view.autofill(AccessibilityNodeInfo.EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY);
     }
+}
+    
 
     private class MyWebChromeClient extends WebChromeClient {
         
