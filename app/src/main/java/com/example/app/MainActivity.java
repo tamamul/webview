@@ -154,7 +154,12 @@ public class MainActivity extends Activity {
             webSettings.setAllowFileAccessFromFileURLs(true);
             webSettings.setAllowUniversalAccessFromFileURLs(true);
         }
-        
+           // FORCE GOOGLE AUTOFILL
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        webSettings.setSaveFormData(true);
+        mWebView.setAutofillHints(View.AUTOFILL_HINT_PASSWORD);
+    }
+    webSettings.setSavePassword(true);
         // ENABLE GOOGLE AUTO-FILL
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             webSettings.setSaveFormData(true);
