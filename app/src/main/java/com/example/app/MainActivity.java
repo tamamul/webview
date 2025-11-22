@@ -3,21 +3,15 @@ package com.example.app;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import androidx.core.content.FileProvider;
-import java.io.File;
-import java.io.IOException;
 
 public class MainActivity extends Activity {
 
@@ -26,17 +20,13 @@ public class MainActivity extends Activity {
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
 
     @Override
-    @SuppressLint({"SetJavaScriptEnabled", "WrongViewCast"})
+    @SuppressLint("SetJavaScriptEnabled")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
         mWebView = findViewById(R.id.activity_main_webview);
-        
-        // Setup WebView
         setupWebView();
-        
-        // Load URL
         mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
     }
 
@@ -54,7 +44,9 @@ public class MainActivity extends Activity {
         
         // Enable geolocation
         webSettings.setGeolocationEnabled(true);
-        webSettings.setGeolocationDatabasePath(getFilesDir().getPath());
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            webSettings.setGeolocationDatabasePath(getFilesDir().getPath());
+        }
         
         // Enable zoom controls
         webSettings.setBuiltInZoomControls(true);
@@ -69,10 +61,16 @@ public class MainActivity extends Activity {
             webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
         
-        // Cache settings
+        // Cache settings - HAPUS method yang deprecated
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        webSettings.setAppCacheEnabled(true);
-        webSettings.setAppCachePath(getCacheDir().getPath());
+        
+        // Enable other important settings
+        webSettings.setAllowFileAccess(true);
+        webSettings.setAllowContentAccess(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            webSettings.setAllowFileAccessFromFileURLs(true);
+            webSettings.setAllowUniversalAccessFromFileURLs(true);
+        }
         
         // Set WebViewClient to handle links internally
         mWebView.setWebViewClient(new MyWebViewClient());
@@ -107,11 +105,16 @@ public class MainActivity extends Activity {
                     return true;
                 }
                 
-                // Load all other URLs in WebView
                 view.loadUrl(url);
                 return true;
             }
             return false;
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            // Page finished loading
         }
     }
 
@@ -120,35 +123,14 @@ public class MainActivity extends Activity {
         // Handle permission requests (camera, microphone, location)
         @Override
         public void onPermissionRequest(final PermissionRequest request) {
-            // Grant all permissions for camera, microphone, and location
-            String[] resources = request.getResources();
-            for (String resource : resources) {
-                if (resource.equals(PermissionRequest.RESOURCE_VIDEO_CAPTURE) ||
-                    resource.equals(PermissionRequest.RESOURCE_AUDIO_CAPTURE) ||
-                    resource.equals(PermissionRequest.RESOURCE_PROTECTED_MEDIA_ID)) {
-                    
-                    // Check if we have the necessary permissions
-                    if (checkSelfPermission(android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
-                        checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-                        
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                request.grant(request.getResources());
-                            }
-                        });
-                    } else {
-                        // Request permissions
-                        String[] permissions = {
-                            android.Manifest.permission.CAMERA,
-                            android.Manifest.permission.RECORD_AUDIO,
-                            android.Manifest.permission.ACCESS_FINE_LOCATION
-                        };
-                        requestPermissions(permissions, 100);
-                    }
-                    return;
+            // Grant all permissions untuk camera, microphone, location
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // Grant semua permission yang diminta
+                    request.grant(request.getResources());
                 }
-            }
+            });
         }
 
         // For file upload (Lollipop and above)
@@ -167,6 +149,22 @@ public class MainActivity extends Activity {
                 return false;
             }
             return true;
+        }
+
+        // For Android < 5.0
+        public void openFileChooser(ValueCallback<Uri> uploadMsg) {
+            openFileChooser(uploadMsg, "*/*");
+        }
+
+        public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType) {
+            openFileChooser(uploadMsg, acceptType, null);
+        }
+
+        public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
+            startActivityForResult(Intent.createChooser(intent, "File Chooser"), FILE_CHOOSER_RESULT_CODE);
         }
     }
 
@@ -188,16 +186,6 @@ public class MainActivity extends Activity {
             }
             uploadMessage.onReceiveValue(results);
             uploadMessage = null;
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        
-        if (requestCode == 100) {
-            // Permissions granted, you might want to reload the page or inform the WebView
-            mWebView.reload();
         }
     }
 
