@@ -3,6 +3,7 @@ package com.example.app;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -22,8 +23,6 @@ import androidx.core.content.ContextCompat;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.view.View;
-
 public class MainActivity extends Activity {
 
     private WebView mWebView;
@@ -31,7 +30,9 @@ public class MainActivity extends Activity {
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
     private final static int PERMISSION_REQUEST_CODE = 100;
 
-    // HAPUS ProgressBar declaration
+    // Variables untuk auto-fill
+    private String username = "";
+    private String password = "";
 
     // Daftar permission yang diperlukan
     private String[] requiredPermissions = {
@@ -47,15 +48,32 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        // Initialize WebView saja
+        // Initialize WebView
         mWebView = findViewById(R.id.activity_main_webview);
         
-        // HAPUS progressBar initialization
+        // Get credentials dari LoginActivity atau SharedPreferences
+        getCredentials();
         
         // Cek dan minta permission sebelum setup WebView
         if (checkAndRequestPermissions()) {
             setupWebView();
         }
+    }
+
+    private void getCredentials() {
+        // Coba ambil dari Intent (langsung dari LoginActivity)
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("username") && intent.hasExtra("password")) {
+            username = intent.getStringExtra("username");
+            password = intent.getStringExtra("password");
+        } else {
+            // Fallback: ambil dari SharedPreferences
+            SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
+            username = prefs.getString("username", "");
+            password = prefs.getString("password", "");
+        }
+        
+        Toast.makeText(this, "Selamat datang " + username, Toast.LENGTH_SHORT).show();
     }
 
     private boolean checkAndRequestPermissions() {
@@ -100,81 +118,83 @@ public class MainActivity extends Activity {
             if (allGranted) {
                 // Semua permission granted, setup WebView
                 setupWebView();
-                mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
             } else {
                 // Beberapa permission ditolak
                 Toast.makeText(this, "Beberapa fitur mungkin tidak berfungsi tanpa izin yang diperlukan", Toast.LENGTH_LONG).show();
                 setupWebView();
-                mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
             }
         }
     }
 
     private void setupWebView() {
-    WebSettings webSettings = mWebView.getSettings();
-    
-    // Enable JavaScript
-    webSettings.setJavaScriptEnabled(true);
-    
-    // Enable DOM storage
-    webSettings.setDomStorageEnabled(true);
-    
-    // Enable database
-    webSettings.setDatabaseEnabled(true);
-    
-    // Enable geolocation
-    webSettings.setGeolocationEnabled(true);
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-        webSettings.setGeolocationDatabasePath(getFilesDir().getPath());
+        WebSettings webSettings = mWebView.getSettings();
+        
+        // Enable JavaScript
+        webSettings.setJavaScriptEnabled(true);
+        
+        // Enable DOM storage
+        webSettings.setDomStorageEnabled(true);
+        
+        // Enable database
+        webSettings.setDatabaseEnabled(true);
+        
+        // Enable geolocation
+        webSettings.setGeolocationEnabled(true);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            webSettings.setGeolocationDatabasePath(getFilesDir().getPath());
+        }
+        
+        // Enable zoom controls
+        webSettings.setBuiltInZoomControls(true);
+        webSettings.setDisplayZoomControls(false);
+        
+        // Enable wide viewport
+        webSettings.setUseWideViewPort(true);
+        webSettings.setLoadWithOverviewMode(true);
+        
+        // Enable mixed content (for HTTP/HTTPS)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
+        
+        // Cache settings
+        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        
+        // Enable other important settings
+        webSettings.setAllowFileAccess(true);
+        webSettings.setAllowContentAccess(true);
+        
+        // CRITICAL FOR CAMERA: Enable media playback without gesture
+        webSettings.setMediaPlaybackRequiresUserGesture(false);
+        
+        // Enable WebRTC - Important for camera access
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            webSettings.setAllowFileAccessFromFileURLs(true);
+            webSettings.setAllowUniversalAccessFromFileURLs(true);
+        }
+        
+        // Set WebViewClient to handle links internally dengan auto-fill
+        mWebView.setWebViewClient(new MyWebViewClient());
+        
+        // Set WebChromeClient untuk permissions
+        mWebView.setWebChromeClient(new MyWebChromeClient());
+        
+        // Load URL
+        mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
     }
-    
-    // Enable zoom controls
-    webSettings.setBuiltInZoomControls(true);
-    webSettings.setDisplayZoomControls(false);
-    
-    // Enable wide viewport
-    webSettings.setUseWideViewPort(true);
-    webSettings.setLoadWithOverviewMode(true);
-    
-    // Enable mixed content (for HTTP/HTTPS)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-    }
-    
-    // Cache settings
-    webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
-    
-    // Enable other important settings
-    webSettings.setAllowFileAccess(true);
-    webSettings.setAllowContentAccess(true);
-    
-    // CRITICAL FOR CAMERA: Enable media playback without gesture
-    webSettings.setMediaPlaybackRequiresUserGesture(false);
-    
-    // Enable WebRTC - Important for camera access
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-        webSettings.setAllowFileAccessFromFileURLs(true);
-        webSettings.setAllowUniversalAccessFromFileURLs(true);
-    }
-    
-    // ENABLE GOOGLE AUTOFILL (HAPUS DUPLIKASI)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        webSettings.setSaveFormData(true);
-        mWebView.setAutofillHints(View.AUTOFILL_HINT_PASSWORD);
-    }
-    webSettings.setSavePassword(true);
-    
-    // Set WebViewClient to handle links internally
-    mWebView.setWebViewClient(new MyWebViewClient());
-    
-    // Set WebChromeClient untuk permissions
-    mWebView.setWebChromeClient(new MyWebChromeClient());
-    
-    // Load URL
-    mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
-}
+
     private class MyWebViewClient extends WebViewClient {
         
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            
+            // Auto-fill credentials setelah halaman selesai load
+            if (!username.isEmpty() && !password.isEmpty()) {
+                autoFillCredentials();
+            }
+        }
+
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             // Handle all URLs within WebView
@@ -266,6 +286,33 @@ public class MainActivity extends Activity {
         }
     }
 
+    // Method untuk auto-fill credentials ke form login
+    private void autoFillCredentials() {
+        String jsCode = 
+            "setTimeout(function() {" +
+            "  var inputs = document.querySelectorAll('input');" +
+            "  inputs.forEach(function(input) {" +
+            "    if (input.type === 'email' || input.type === 'text' || input.name.includes('email') || input.name.includes('username')) {" +
+            "      input.value = '" + username + "';" +
+            "      input.dispatchEvent(new Event('input', { bubbles: true }));" +
+            "      input.dispatchEvent(new Event('change', { bubbles: true }));" +
+            "    }" +
+            "    if (input.type === 'password') {" +
+            "      input.value = '" + password + "';" +
+            "      input.dispatchEvent(new Event('input', { bubbles: true }));" +
+            "      input.dispatchEvent(new Event('change', { bubbles: true }));" +
+            "    }" +
+            "  });" +
+            "  console.log('Auto-fill completed for: ' + '" + username + "');" +
+            "}, 1500);";
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mWebView.evaluateJavascript(jsCode, null);
+        } else {
+            mWebView.loadUrl("javascript:" + jsCode);
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -292,7 +339,10 @@ public class MainActivity extends Activity {
         if (mWebView.canGoBack()) {
             mWebView.goBack();
         } else {
-            super.onBackPressed();
+            // Kembali ke LoginActivity
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
         }
     }
 
