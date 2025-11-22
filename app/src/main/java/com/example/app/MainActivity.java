@@ -140,6 +140,11 @@ public class MainActivity extends Activity {
         // Enable other important settings
         webSettings.setAllowFileAccess(true);
         webSettings.setAllowContentAccess(true);
+        
+        // Important for camera access and WebRTC
+        webSettings.setMediaPlaybackRequiresUserGesture(false);
+        
+        // Enable WebRTC features
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             webSettings.setAllowFileAccessFromFileURLs(true);
             webSettings.setAllowUniversalAccessFromFileURLs(true);
@@ -190,8 +195,8 @@ public class MainActivity extends Activity {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            // Inject JavaScript untuk handle geolocation error
-            injectGeolocationFallback();
+            // Inject JavaScript untuk handle camera dan geolocation
+            injectCameraAndGeolocationFallback();
         }
     }
 
@@ -204,32 +209,53 @@ public class MainActivity extends Activity {
             callback.invoke(origin, true, false);
         }
         
-        // Handle permission requests (camera, microphone, location)
+        // Handle permission requests (camera, microphone, location) - FIXED VERSION
         @Override
         public void onPermissionRequest(final PermissionRequest request) {
-            // Check if we have the required permissions
-            boolean hasPermissions = true;
-            for (String resource : request.getResources()) {
-                if (resource.equals(PermissionRequest.RESOURCE_VIDEO_CAPTURE) && 
-                    ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                    hasPermissions = false;
-                    break;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // Grant semua permission yang diminta untuk WebRTC/camera
+                    String[] requestedResources = request.getResources();
+                    
+                    // Cek jika permission sudah diberikan
+                    boolean canGrant = true;
+                    for (String resource : requestedResources) {
+                        if (resource.equals(PermissionRequest.RESOURCE_VIDEO_CAPTURE) || 
+                            resource.equals(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
+                            
+                            if (!hasCameraAndAudioPermission()) {
+                                canGrant = false;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (canGrant) {
+                        // Grant semua resources yang diminta
+                        request.grant(requestedResources);
+                        Toast.makeText(MainActivity.this, "Akses kamera diberikan", Toast.LENGTH_SHORT).show();
+                    } else {
+                        // Jika belum ada permission, minta lagi
+                        Toast.makeText(MainActivity.this, "Memberikan akses kamera...", Toast.LENGTH_SHORT).show();
+                        requestPermissions(requiredPermissions, PERMISSION_REQUEST_CODE);
+                        
+                        // Tetap grant setelah delay untuk kasus tertentu
+                        mWebView.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                request.grant(requestedResources);
+                            }
+                        }, 1000);
+                    }
                 }
-                if (resource.equals(PermissionRequest.RESOURCE_AUDIO_CAPTURE) && 
-                    ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                    hasPermissions = false;
-                    break;
-                }
-            }
-            
-            if (hasPermissions) {
-                // Grant all requested permissions
-                request.grant(request.getResources());
-            } else {
-                // Permissions not granted, show message
-                Toast.makeText(MainActivity.this, "Izin diperlukan untuk fitur ini", Toast.LENGTH_SHORT).show();
-                request.deny();
-            }
+            });
+        }
+        
+        // Handle permission request cancel
+        @Override
+        public void onPermissionRequestCanceled(PermissionRequest request) {
+            Toast.makeText(MainActivity.this, "Akses kamera ditolak", Toast.LENGTH_SHORT).show();
         }
 
         // For file upload (Lollipop and above)
@@ -267,21 +293,46 @@ public class MainActivity extends Activity {
         }
     }
 
-    // Inject JavaScript fallback untuk geolocation
-    private void injectGeolocationFallback() {
-        // Ganti text blocks dengan string biasa untuk kompatibilitas Java 8
-        String jsCode = "if (!navigator.geolocation) {" +
+    // Cek apakah permission kamera dan audio sudah diberikan
+    private boolean hasCameraAndAudioPermission() {
+        return ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
+               ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    // Inject JavaScript fallback untuk camera dan geolocation
+    private void injectCameraAndGeolocationFallback() {
+        String jsCode = 
+            "try {" +
+            "// Fix untuk getUserMedia" +
+            "if (navigator.mediaDevices && !navigator.mediaDevices.getUserMedia) {" +
+            "navigator.mediaDevices.getUserMedia = function(constraints) {" +
+            "return new Promise(function(resolve, reject) {" +
+            "navigator.getUserMedia(constraints, resolve, reject);" +
+            "});" +
+            "};" +
+            "}" +
+            
+            "// Backup untuk navigator.getUserMedia lama" +
+            "if (!navigator.getUserMedia) {" +
+            "navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;" +
+            "}" +
+            
+            "// Fix untuk geolocation" +
+            "if (!navigator.geolocation) {" +
             "navigator.geolocation = {" +
             "getCurrentPosition: function(success, error) {" +
-            "error({code: 1, message: 'Geolocation not supported'});" +
+            "if (error) error({code: 1, message: 'Geolocation not supported'});" +
             "}," +
             "watchPosition: function(success, error) {" +
-            "error({code: 1, message: 'Geolocation not supported'});" +
+            "if (error) error({code: 1, message: 'Geolocation not supported'});" +
             "return 1;" +
             "}," +
             "clearWatch: function(id) {}" +
             "};" +
-            "}";
+            "}" +
+            
+            "console.log('Camera and geolocation fixes applied');" +
+            "} catch(e) { console.log('Fix error: ' + e); }";
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             mWebView.evaluateJavascript(jsCode, null);
@@ -325,6 +376,8 @@ public class MainActivity extends Activity {
         super.onResume();
         if (mWebView != null) {
             mWebView.onResume();
+            // Refresh halaman saat resume untuk memastikan kamera bekerja
+            mWebView.reload();
         }
     }
 
