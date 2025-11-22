@@ -1,15 +1,22 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "com.example.app"
         minSdkVersion 21
-        targetSdkVersion 31
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
+        
+        // Tambahkan ini untuk mendukung Java 8 features
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
     }
+    
     buildTypes {
         release {
             minifyEnabled false
@@ -19,13 +26,11 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.6.0'
-    
-    // Jika menggunakan AndroidX, tambahkan:
-    implementation 'androidx.webkit:webkit:1.6.0'
-}
-
-dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.core:core:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.webkit:webkit:1.6.1'
+    
+    // Optional: untuk tambahan compatibility
+    implementation 'androidx.activity:activity:1.7.0'
 }
