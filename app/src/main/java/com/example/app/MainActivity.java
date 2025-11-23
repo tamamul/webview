@@ -275,6 +275,7 @@ public class MainActivity extends Activity {
 
         mWebView.evaluateJavascript(jsCode, null);
     }
+}
     
     // ... method lainnya tetap sama ...
     private class MyWebChromeClient extends WebChromeClient {
