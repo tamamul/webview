@@ -179,7 +179,7 @@ public class MainActivity extends Activity {
         mWebView.setWebChromeClient(new MyWebChromeClient());
         
         // Load URL
-        mWebView.loadUrl("https://pergunumarsa.org/dev/public/");
+        mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
     }
 
     private class MyWebViewClient extends WebViewClient {
