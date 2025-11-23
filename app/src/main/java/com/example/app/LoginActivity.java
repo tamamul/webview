@@ -79,7 +79,7 @@ public class LoginActivity extends Activity {
     new Thread(() -> {
         try {
             // Pakai API baru
-            String apiUrl = "https://pergunumarsa.org/dev/public/api/auth/login";
+            String apiUrl = "https://smkmaarif9kebumen.sch.id/present/public/api/auth/login";
             
             // Format JSON sesuai API baru
             String jsonData = "{\"login\":\"" + username + "\",\"password\":\"" + password + "\"}";
