@@ -75,7 +75,7 @@ public class MainActivity extends Activity {
             // Cek dan minta permission sebelum setup WebView
             if (checkAndRequestPermissions()) {
                 setupWebView();
-                mWebView.loadUrl("https://pergunumarsa.org/dev/public/");
+                mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
             }
         }
     }
@@ -122,12 +122,12 @@ public class MainActivity extends Activity {
             if (allGranted) {
                 // Semua permission granted, setup WebView
                 setupWebView();
-                mWebView.loadUrl("https://pergunumarsa.org/dev/public/");
+                mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
             } else {
                 // Beberapa permission ditolak
                 Toast.makeText(this, "Beberapa fitur mungkin tidak berfungsi tanpa izin yang diperlukan", Toast.LENGTH_LONG).show();
                 setupWebView();
-                mWebView.loadUrl("https://pergunumarsa.org/dev/public/");
+                mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
             }
         }
     }
