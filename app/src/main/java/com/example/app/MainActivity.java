@@ -191,84 +191,92 @@ public class MainActivity extends Activity {
                 startActivity(intent);
                 return true;
             }
-            
-            // Load all other URLs in WebView
-            view.loadUrl(url);
-            return true;
-        }
+public class MainActivity extends Activity {
+    private WebView mWebView;
 
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, android.webkit.WebResourceRequest request) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                String url = request.getUrl().toString();
-                
-                if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("whatsapp:")) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                    startActivity(intent);
-                    return true;
-                }
-                
-                view.loadUrl(url);
-                return true;
-            }
-            return false;
-        }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        
+        mWebView = findViewById(R.id.activity_main_webview);
+        setupWebView();
+        
+        // CEK: Jika ada credentials, langsung homepage + auto login background
+        // Jika tidak ada, ke LoginActivity
+        checkCredentialsAndProceed();
+    }
 
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-            
-            // AUTO LOGIN jika ada credentials dan di halaman login
-            if (!username.isEmpty() && !password.isEmpty() && 
-                (url.contains("login") || url.contains("auth") || url.endsWith("/public/"))) {
-                autoLoginToWebsite();
-            }
-            
-            // Inject JavaScript untuk handle camera dan geolocation
-            injectCameraAndGeolocationFallback();
+    private void checkCredentialsAndProceed() {
+        SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
+        String username = prefs.getString("username", "");
+        String password = prefs.getString("password", "");
+        
+        if (username.isEmpty() || password.isEmpty()) {
+            // TIDAK ADA CREDENTIALS - ke LoginActivity
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            // ADA CREDENTIALS - load homepage (nanti auto login di background)
+            mWebView.loadUrl("https://pergunumarsa.org/dev/public/");
+            Toast.makeText(this, "Membuka aplikasi...", Toast.LENGTH_SHORT).show();
         }
     }
 
-    // === TAMBAH METHOD AUTO LOGIN INI ===
-    private void autoLoginToWebsite() {
+    private void setupWebView() {
+        WebSettings webSettings = mWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        
+        mWebView.setWebViewClient(new MyWebViewClient());
+        mWebView.setWebChromeClient(new MyWebChromeClient());
+    }
+
+    private class MyWebViewClient extends WebViewClient {
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            // AUTO LOGIN BACKGROUND jika di login page
+            attemptBackgroundLogin();
+        }
+    }
+
+    private void attemptBackgroundLogin() {
+        SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
+        String username = prefs.getString("username", "");
+        String password = prefs.getString("password", "");
+        
+        if (username.isEmpty() || password.isEmpty()) return;
+
         String jsCode = 
             "setTimeout(function() {" +
-            "  console.log('Auto-login started for: " + username + "');" +
+            "  var form = document.querySelector('form[action*=\"login\"]');" +
+            "  var isLoggedIn = document.querySelector('[href*=\"logout\"]') !== null;" +
             "  " +
-            "  var emailInput = document.querySelector('input[name=\"login\"], input[type=\"email\"], input[name=\"username\"]');" +
-            "  var passwordInput = document.querySelector('input[name=\"password\"], input[type=\"password\"]');" +
-            "  var form = document.querySelector('form');" +
-            "  " +
-            "  if (emailInput && passwordInput && form) {" +
-            "    emailInput.value = '" + username + "';" +
-            "    passwordInput.value = '" + password + "';" +
+            "  if (form && !isLoggedIn) {" +  // Hanya jika butuh login
+            "    var emailInput = document.querySelector('input[name=\"login\"]');" +
+            "    var passwordInput = document.querySelector('input[name=\"password\"]');" +
             "    " +
-            "    // Trigger events" +
-            "    ['input', 'change', 'blur'].forEach(function(eventType) {" +
-            "      var event = new Event(eventType, { bubbles: true });" +
-            "      emailInput.dispatchEvent(event);" +
-            "      passwordInput.dispatchEvent(event);" +
-            "    });" +
-            "    " +
-            "    console.log('Auto-fill completed, submitting form...');" +
-            "    " +
-            "    // Submit form setelah delay" +
-            "    setTimeout(function() {" +
-            "      form.submit();" +
-            "      console.log('Form submitted automatically');" +
-            "    }, 1000);" +
-            "  } else {" +
-            "    console.log('Login form not found');" +
+            "    if (emailInput && passwordInput) {" +
+            "      emailInput.value = '" + username + "';" +
+            "      passwordInput.value = '" + password + "';" +
+            "      " +
+            "      // Trigger events" +
+            "      ['input', 'change'].forEach(function(eventType) {" +
+            "        emailInput.dispatchEvent(new Event(eventType, { bubbles: true }));" +
+            "        passwordInput.dispatchEvent(new Event(eventType, { bubbles: true }));" +
+            "      });" +
+            "      " +
+            "      // Auto submit" +
+            "      setTimeout(function() { form.submit(); }, 1000);" +
+            "    }" +
             "  }" +
             "}, 1500);";
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            mWebView.evaluateJavascript(jsCode, null);
-        } else {
-            mWebView.loadUrl("javascript:" + jsCode);
-        }
+        mWebView.evaluateJavascript(jsCode, null);
     }
-
+    
+    // ... method lainnya tetap sama ...
     private class MyWebChromeClient extends WebChromeClient {
         
         // Handle geolocation permission prompt
