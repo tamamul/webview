@@ -50,29 +50,34 @@ public class MainActivity extends Activity {
         
         mWebView = findViewById(R.id.activity_main_webview);
         
-        // Get credentials
-        getCredentials();
-        
-        // Cek dan minta permission sebelum setup WebView
-        if (checkAndRequestPermissions()) {
-            setupWebView();
-        }
+        // CEK: Jika ada credentials, langsung homepage + auto login background
+        // Jika tidak ada, ke LoginActivity
+        checkCredentialsAndProceed();
     }
 
-    private void getCredentials() {
-        // Coba ambil dari Intent (langsung dari LoginActivity)
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("username") && intent.hasExtra("password")) {
-            username = intent.getStringExtra("username");
-            password = intent.getStringExtra("password");
-        } else {
-            // Fallback: ambil dari SharedPreferences
-            SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
-            username = prefs.getString("username", "");
-            password = prefs.getString("password", "");
-        }
+    private void checkCredentialsAndProceed() {
+        SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
+        String username = prefs.getString("username", "");
+        String password = prefs.getString("password", "");
         
-        Toast.makeText(this, "Selamat datang " + username, Toast.LENGTH_SHORT).show();
+        if (username.isEmpty() || password.isEmpty()) {
+            // TIDAK ADA CREDENTIALS - ke LoginActivity
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            // ADA CREDENTIALS - setup WebView dan load homepage
+            this.username = username;
+            this.password = password;
+            
+            Toast.makeText(this, "Selamat datang " + username, Toast.LENGTH_SHORT).show();
+            
+            // Cek dan minta permission sebelum setup WebView
+            if (checkAndRequestPermissions()) {
+                setupWebView();
+                mWebView.loadUrl("https://pergunumarsa.org/dev/public/");
+            }
+        }
     }
 
     private boolean checkAndRequestPermissions() {
@@ -117,10 +122,12 @@ public class MainActivity extends Activity {
             if (allGranted) {
                 // Semua permission granted, setup WebView
                 setupWebView();
+                mWebView.loadUrl("https://pergunumarsa.org/dev/public/");
             } else {
                 // Beberapa permission ditolak
                 Toast.makeText(this, "Beberapa fitur mungkin tidak berfungsi tanpa izin yang diperlukan", Toast.LENGTH_LONG).show();
                 setupWebView();
+                mWebView.loadUrl("https://pergunumarsa.org/dev/public/");
             }
         }
     }
@@ -177,9 +184,6 @@ public class MainActivity extends Activity {
         
         // Set WebChromeClient for permissions, file upload, etc.
         mWebView.setWebChromeClient(new MyWebChromeClient());
-        
-        // Load URL
-        mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
     }
 
     private class MyWebViewClient extends WebViewClient {
@@ -191,61 +195,42 @@ public class MainActivity extends Activity {
                 startActivity(intent);
                 return true;
             }
-public class MainActivity extends Activity {
-    private WebView mWebView;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        
-        mWebView = findViewById(R.id.activity_main_webview);
-        setupWebView();
-        
-        // CEK: Jika ada credentials, langsung homepage + auto login background
-        // Jika tidak ada, ke LoginActivity
-        checkCredentialsAndProceed();
-    }
-
-    private void checkCredentialsAndProceed() {
-        SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
-        String username = prefs.getString("username", "");
-        String password = prefs.getString("password", "");
-        
-        if (username.isEmpty() || password.isEmpty()) {
-            // TIDAK ADA CREDENTIALS - ke LoginActivity
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        } else {
-            // ADA CREDENTIALS - load homepage (nanti auto login di background)
-            mWebView.loadUrl("https://pergunumarsa.org/dev/public/");
-            Toast.makeText(this, "Membuka aplikasi...", Toast.LENGTH_SHORT).show();
+            
+            // Load all other URLs in WebView
+            view.loadUrl(url);
+            return true;
         }
-    }
 
-    private void setupWebView() {
-        WebSettings webSettings = mWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        
-        mWebView.setWebViewClient(new MyWebViewClient());
-        mWebView.setWebChromeClient(new MyWebChromeClient());
-    }
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, android.webkit.WebResourceRequest request) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                String url = request.getUrl().toString();
+                
+                if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("whatsapp:")) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(intent);
+                    return true;
+                }
+                
+                view.loadUrl(url);
+                return true;
+            }
+            return false;
+        }
 
-    private class MyWebViewClient extends WebViewClient {
         @Override
         public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            
             // AUTO LOGIN BACKGROUND jika di login page
             attemptBackgroundLogin();
+            
+            // Inject JavaScript untuk handle camera dan geolocation
+            injectCameraAndGeolocationFallback();
         }
     }
 
     private void attemptBackgroundLogin() {
-        SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
-        String username = prefs.getString("username", "");
-        String password = prefs.getString("password", "");
-        
         if (username.isEmpty() || password.isEmpty()) return;
 
         String jsCode = 
@@ -273,11 +258,13 @@ public class MainActivity extends Activity {
             "  }" +
             "}, 1500);";
 
-        mWebView.evaluateJavascript(jsCode, null);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mWebView.evaluateJavascript(jsCode, null);
+        } else {
+            mWebView.loadUrl("javascript:" + jsCode);
+        }
     }
-}
-    
-    // ... method lainnya tetap sama ...
+
     private class MyWebChromeClient extends WebChromeClient {
         
         // Handle geolocation permission prompt
@@ -381,7 +368,7 @@ public class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         
         if (requestCode == FILE_CHOOSER_RESULT_CODE) {
-            if (uploadMessage == null) return;
+            if (uploadMessage != null) return;
             
             Uri[] results = null;
             if (resultCode == Activity.RESULT_OK) {
@@ -392,8 +379,10 @@ public class MainActivity extends Activity {
                     }
                 }
             }
-            uploadMessage.onReceiveValue(results);
-            uploadMessage = null;
+            if (uploadMessage != null) {
+                uploadMessage.onReceiveValue(results);
+                uploadMessage = null;
+            }
         }
     }
 
