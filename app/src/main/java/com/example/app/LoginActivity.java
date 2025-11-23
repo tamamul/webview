@@ -64,93 +64,105 @@ public class LoginActivity extends Activity {
 
     // === METHOD INI HARUS ADA DI DALAM CLASS ===
     private void attemptLogin() {
-        String username = etUsername.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
+    String username = etUsername.getText().toString().trim();
+    String password = etPassword.getText().toString().trim();
 
-        if (username.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Username dan password harus diisi", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Tampilkan loading
-        btnLogin.setText("Loading...");
-        btnLogin.setEnabled(false);
-
-        new Thread(() -> {
-            try {
-                // Login via API
-                String apiUrl = "https://smkmaarif9kebumen.sch.id/present/public/api/login";
-                String postData = "username=" + URLEncoder.encode(username, "UTF-8") + 
-                                "&password=" + URLEncoder.encode(password, "UTF-8");
-
-                URL url = new URL(apiUrl);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-                conn.setDoOutput(true);
-
-                // Send request
-                OutputStream os = conn.getOutputStream();
-                os.write(postData.getBytes());
-                os.flush();
-
-                // Get response
-                int responseCode = conn.getResponseCode();
-                InputStream is = responseCode == 200 ? conn.getInputStream() : conn.getErrorStream();
-                BufferedReader br = new BufferedReader(new InputStreamReader(is));
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = br.readLine()) != null) {
-                    response.append(line);
-                }
-                br.close();
-
-                runOnUiThread(() -> {
-                    if (responseCode == 200) {
-                        // Login sukses via API
-                        try {
-                            JSONObject jsonResponse = new JSONObject(response.toString());
-                            String token = jsonResponse.getString("token");
-                            
-                            // Simpan credentials & token
-                            SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putString(KEY_USERNAME, username);
-                            editor.putString(KEY_PASSWORD, password);
-                            editor.putString("api_token", token);
-                            editor.putBoolean(KEY_REMEMBER, cbRemember.isChecked());
-                            editor.apply();
-
-                            Toast.makeText(this, "Login berhasil via API", Toast.LENGTH_SHORT).show();
-                            
-                            // Langsung ke MainActivity (dashboard)
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            intent.putExtra("username", username);
-                            intent.putExtra("password", password);
-                            intent.putExtra("api_token", token);
-                            startActivity(intent);
-                            finish();
-                            
-                        } catch (JSONException e) {
-                            Toast.makeText(this, "Error parsing response", Toast.LENGTH_SHORT).show();
-                            btnLogin.setText("MASUK");
-                            btnLogin.setEnabled(true);
-                        }
-                    } else {
-                        // Fallback ke login web biasa
-                        Toast.makeText(this, "Login via API gagal, menggunakan login web", Toast.LENGTH_LONG).show();
-                        proceedWithWebLogin(username, password);
-                    }
-                });
-
-            } catch (Exception e) {
-                runOnUiThread(() -> {
-                    // Fallback ke login web biasa
-                    Toast.makeText(this, "Menggunakan login web", Toast.LENGTH_SHORT).show();
-                    proceedWithWebLogin(username, password);
-                });
-            }
-        }).start();
+    if (username.isEmpty() || password.isEmpty()) {
+        Toast.makeText(this, "Username dan password harus diisi", Toast.LENGTH_SHORT).show();
+        return;
     }
+
+    // Tampilkan loading
+    btnLogin.setText("Loading...");
+    btnLogin.setEnabled(false);
+
+    new Thread(() -> {
+        try {
+            // Pakai API baru
+            String apiUrl = "https://pergunumarsa.org/dev/public/api/auth/login";
+            
+            // Format JSON sesuai API baru
+            String jsonData = "{\"login\":\"" + username + "\",\"password\":\"" + password + "\"}";
+
+            URL url = new URL(apiUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
+
+            // Send JSON data
+            OutputStream os = conn.getOutputStream();
+            os.write(jsonData.getBytes("UTF-8"));
+            os.flush();
+
+            // Get response
+            int responseCode = conn.getResponseCode();
+            InputStream is = responseCode == 200 ? conn.getInputStream() : conn.getErrorStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                response.append(line);
+            }
+            br.close();
+
+            final String finalResponse = response.toString();
+            
+            runOnUiThread(() -> {
+                try {
+                    JSONObject jsonResponse = new JSONObject(finalResponse);
+                    
+                    if (responseCode == 200 && jsonResponse.getBoolean("status")) {
+                        // Login sukses via API baru
+                        Toast.makeText(LoginActivity.this, "Login berhasil via API", Toast.LENGTH_SHORT).show();
+                        
+                        // Simpan credentials
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString(KEY_USERNAME, username);
+                        editor.putString(KEY_PASSWORD, password);
+                        editor.putBoolean(KEY_REMEMBER, cbRemember.isChecked());
+                        editor.apply();
+                        
+                        // Langsung ke dashboard (bypass login page)
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        intent.putExtra("username", username);
+                        intent.putExtra("password", password);
+                        intent.putExtra("api_login", true); // Flag bahwa login via API berhasil
+                        startActivity(intent);
+                        finish();
+                        
+                    } else {
+                        // Login gagal
+                        String errorMessage = "Login gagal";
+                        
+                        if (jsonResponse.has("message")) {
+                            errorMessage = jsonResponse.getString("message");
+                        } else if (jsonResponse.has("messages")) {
+                            errorMessage = jsonResponse.getJSONObject("messages").getString("error");
+                        }
+                        
+                        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                        btnLogin.setText("MASUK");
+                        btnLogin.setEnabled(true);
+                    }
+                    
+                } catch (JSONException e) {
+                    Toast.makeText(LoginActivity.this, "Error parsing response: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    btnLogin.setText("MASUK");
+                    btnLogin.setEnabled(true);
+                }
+            });
+
+        } catch (Exception e) {
+            runOnUiThread(() -> {
+                Toast.makeText(LoginActivity.this, "Network error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                btnLogin.setText("MASUK");
+                btnLogin.setEnabled(true);
+            });
+        }
+    }).start();
+}
 
     // === METHOD INI JUGA HARUS ADA DI DALAM CLASS ===
     private void proceedWithWebLogin(String username, String password) {
