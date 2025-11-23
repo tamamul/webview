@@ -22,7 +22,6 @@ import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
-import android.os.Handler;
 
 public class MainActivity extends Activity {
 
@@ -31,7 +30,7 @@ public class MainActivity extends Activity {
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
     private final static int PERMISSION_REQUEST_CODE = 100;
 
-    // Variables untuk auto-fill
+    // Variables untuk credentials
     private String username = "";
     private String password = "";
 
@@ -43,59 +42,38 @@ public class MainActivity extends Activity {
             android.Manifest.permission.RECORD_AUDIO
     };
 
-@Override
-@SuppressLint("SetJavaScriptEnabled")
-protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_main);
-    
-    // Initialize WebView
-    mWebView = findViewById(R.id.activity_main_webview);
-    
-    // Get credentials dari LoginActivity atau SharedPreferences
-    getCredentials();
-    
-    // Cek dan minta permission sebelum setup WebView
-    if (checkAndRequestPermissions()) {
-        setupWebView();
+    @Override
+    @SuppressLint("SetJavaScriptEnabled")
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
         
-        // === TAMBAH INI ===
-        // Cek apakah ada API token, jika ada langsung ke dashboard
-        SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
-        String apiToken = prefs.getString("api_token", "");
+        mWebView = findViewById(R.id.activity_main_webview);
         
-        if (!apiToken.isEmpty()) {
-            // Langsung buka dashboard, bypass login page
-            mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/dashboard");
-        } else {
-            // Fallback ke URL biasa (auto login via JavaScript)
-            mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
+        // Get credentials
+        getCredentials();
+        
+        // Cek dan minta permission sebelum setup WebView
+        if (checkAndRequestPermissions()) {
+            setupWebView();
         }
     }
-}
 
-private void getCredentials() {
-    // Coba ambil dari Intent (langsung dari LoginActivity)
-    Intent intent = getIntent();
-    if (intent != null && intent.hasExtra("username") && intent.hasExtra("password")) {
-        username = intent.getStringExtra("username");
-        password = intent.getStringExtra("password");
-        
-        // Juga cek apakah ada API token
-        if (intent.hasExtra("api_token")) {
-            String apiToken = intent.getStringExtra("api_token");
+    private void getCredentials() {
+        // Coba ambil dari Intent (langsung dari LoginActivity)
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("username") && intent.hasExtra("password")) {
+            username = intent.getStringExtra("username");
+            password = intent.getStringExtra("password");
+        } else {
+            // Fallback: ambil dari SharedPreferences
             SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
-            prefs.edit().putString("api_token", apiToken).apply();
+            username = prefs.getString("username", "");
+            password = prefs.getString("password", "");
         }
-    } else {
-        // Fallback: ambil dari SharedPreferences
-        SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
-        username = prefs.getString("username", "");
-        password = prefs.getString("password", "");
+        
+        Toast.makeText(this, "Selamat datang " + username, Toast.LENGTH_SHORT).show();
     }
-    
-    Toast.makeText(this, "Selamat datang " + username, Toast.LENGTH_SHORT).show();
-}
 
     private boolean checkAndRequestPermissions() {
         List<String> permissionsNeeded = new ArrayList<>();
@@ -185,46 +163,26 @@ private void getCredentials() {
         webSettings.setAllowFileAccess(true);
         webSettings.setAllowContentAccess(true);
         
-        // CRITICAL FOR CAMERA: Enable media playback without gesture
+        // Important for camera access and WebRTC
         webSettings.setMediaPlaybackRequiresUserGesture(false);
         
-        // Enable WebRTC - Important for camera access
+        // Enable WebRTC features
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             webSettings.setAllowFileAccessFromFileURLs(true);
             webSettings.setAllowUniversalAccessFromFileURLs(true);
         }
         
-        // Set WebViewClient to handle links internally dengan auto-fill
+        // Set WebViewClient to handle links internally
         mWebView.setWebViewClient(new MyWebViewClient());
         
-        // Set WebChromeClient untuk permissions
+        // Set WebChromeClient for permissions, file upload, etc.
         mWebView.setWebChromeClient(new MyWebChromeClient());
         
         // Load URL
-        mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
+        mWebView.loadUrl("https://pergunumarsa.org/dev/public/");
     }
 
     private class MyWebViewClient extends WebViewClient {
-        
-        @Override
-public void onPageFinished(WebView view, String url) {
-    super.onPageFinished(view, url);
-    
-    // Auto login hanya jika:
-    // 1. Ada credentials
-    // 2. Dan di halaman login (bukan dashboard/halaman lain)
-    if (!username.isEmpty() && !password.isEmpty()) {
-        if (url.contains("/present/public") && !url.contains("dashboard")) {
-            // Tunggu sebentar lalu execute auto login
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    autoLoginToWebsite();
-                }
-            }, 1000);
-        }
-    }
-}
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             // Handle all URLs within WebView
@@ -255,6 +213,60 @@ public void onPageFinished(WebView view, String url) {
             }
             return false;
         }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            
+            // AUTO LOGIN jika ada credentials dan di halaman login
+            if (!username.isEmpty() && !password.isEmpty() && 
+                (url.contains("login") || url.contains("auth") || url.endsWith("/public/"))) {
+                autoLoginToWebsite();
+            }
+            
+            // Inject JavaScript untuk handle camera dan geolocation
+            injectCameraAndGeolocationFallback();
+        }
+    }
+
+    // === TAMBAH METHOD AUTO LOGIN INI ===
+    private void autoLoginToWebsite() {
+        String jsCode = 
+            "setTimeout(function() {" +
+            "  console.log('Auto-login started for: " + username + "');" +
+            "  " +
+            "  var emailInput = document.querySelector('input[name=\"login\"], input[type=\"email\"], input[name=\"username\"]');" +
+            "  var passwordInput = document.querySelector('input[name=\"password\"], input[type=\"password\"]');" +
+            "  var form = document.querySelector('form');" +
+            "  " +
+            "  if (emailInput && passwordInput && form) {" +
+            "    emailInput.value = '" + username + "';" +
+            "    passwordInput.value = '" + password + "';" +
+            "    " +
+            "    // Trigger events" +
+            "    ['input', 'change', 'blur'].forEach(function(eventType) {" +
+            "      var event = new Event(eventType, { bubbles: true });" +
+            "      emailInput.dispatchEvent(event);" +
+            "      passwordInput.dispatchEvent(event);" +
+            "    });" +
+            "    " +
+            "    console.log('Auto-fill completed, submitting form...');" +
+            "    " +
+            "    // Submit form setelah delay" +
+            "    setTimeout(function() {" +
+            "      form.submit();" +
+            "      console.log('Form submitted automatically');" +
+            "    }, 1000);" +
+            "  } else {" +
+            "    console.log('Login form not found');" +
+            "  }" +
+            "}, 1500);";
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mWebView.evaluateJavascript(jsCode, null);
+        } else {
+            mWebView.loadUrl("javascript:" + jsCode);
+        }
     }
 
     private class MyWebChromeClient extends WebChromeClient {
@@ -266,19 +278,16 @@ public void onPageFinished(WebView view, String url) {
             callback.invoke(origin, true, false);
         }
         
-        // Handle permission requests (camera, microphone)
+        // Handle permission requests (camera, microphone, location)
         @Override
         public void onPermissionRequest(final PermissionRequest request) {
-            // Langsung grant permission tanpa delay
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Grant semua permission yang diminta
-                        request.grant(request.getResources());
-                    }
-                });
-            }
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // Grant semua permission yang diminta
+                    request.grant(request.getResources());
+                }
+            });
         }
 
         // For file upload (Lollipop and above)
@@ -316,79 +325,48 @@ public void onPageFinished(WebView view, String url) {
         }
     }
 
-    // Method BARU - AUTO LOGIN via POST
-private void autoLoginToWebsite() {
-    String jsCode = 
-        "setTimeout(function() {" +
-        "  console.log('Starting auto login...');" +
-        "  " +
-        "  // Cari form dengan action yang mengandung 'login'" +
-        "  var loginForm = document.querySelector('form[action*=\"login\"]');" +
-        "  " +
-        "  if (loginForm) {" +
-        "    console.log('Login form found:', loginForm.action);" +
-        "    " +
-        "    // Input fields berdasarkan name attribute" +
-        "    var emailInput = document.querySelector('input[name=\"login\"]');" +
-        "    var passwordInput = document.querySelector('input[name=\"password\"]');" +
-        "    var rememberCheckbox = document.querySelector('input[name=\"remember\"]');" +
-        "    " +
-        "    console.log('Email input:', emailInput);" +
-        "    console.log('Password input:', passwordInput);" +
-        "    " +
-        "    if (emailInput && passwordInput) {" +
-        "      // Isi credentials" +
-        "      emailInput.value = '" + username + "';" +
-        "      passwordInput.value = '" + password + "';" +
-        "      " +
-        "      // Centang remember me jika ada" +
-        "      if (rememberCheckbox) {" +
-        "        rememberCheckbox.checked = true;" +
-        "      }" +
-        "      " +
-        "      // Trigger semua events yang diperlukan" +
-        "      var events = ['input', 'change', 'blur', 'focus'];" +
-        "      events.forEach(function(eventType) {" +
-        "        var event = new Event(eventType, { bubbles: true });" +
-        "        emailInput.dispatchEvent(event);" +
-        "        passwordInput.dispatchEvent(event);" +
-        "      });" +
-        "      " +
-        "      console.log('Credentials filled, submitting form...');" +
-        "      " +
-        "      // Submit form langsung (tunggu 1 detik dulu)" +
-        "      setTimeout(function() {" +
-        "        loginForm.submit();" +
-        "        console.log('Form submitted!');" +
-        "      }, 1000);" +
-        "      " +
-        "    } else {" +
-        "      console.log('Required input fields not found');" +
-        "    }" +
-        "  } else {" +
-        "    console.log('No login form found on this page');" +
-        "    " +
-        "    // Fallback: coba cari form apapun dengan input email & password" +
-        "    var forms = document.querySelectorAll('form');" +
-        "    forms.forEach(function(form, index) {" +
-        "      var hasEmail = form.querySelector('input[type=\"email\"], input[name*=\"login\"]');" +
-        "      var hasPassword = form.querySelector('input[type=\"password\"]');" +
-        "      " +
-        "      if (hasEmail && hasPassword) {" +
-        "        console.log('Found potential login form at index:', index);" +
-        "        loginForm = form;" +
-        "      }" +
-        "    });" +
-        "  }" +
-        "}, 500);"; // Waktu tunggu lebih pendek
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-        mWebView.evaluateJavascript(jsCode, null);
-    } else {
-        mWebView.loadUrl("javascript:" + jsCode);
+    // Inject JavaScript fallback untuk camera dan geolocation
+    private void injectCameraAndGeolocationFallback() {
+        String jsCode = 
+            "try {" +
+            "// Fix untuk getUserMedia" +
+            "if (navigator.mediaDevices && !navigator.mediaDevices.getUserMedia) {" +
+            "navigator.mediaDevices.getUserMedia = function(constraints) {" +
+            "return new Promise(function(resolve, reject) {" +
+            "navigator.getUserMedia(constraints, resolve, reject);" +
+            "});" +
+            "};" +
+            "}" +
+            
+            "// Backup untuk navigator.getUserMedia lama" +
+            "if (!navigator.getUserMedia) {" +
+            "navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;" +
+            "}" +
+            
+            "// Fix untuk geolocation" +
+            "if (!navigator.geolocation) {" +
+            "navigator.geolocation = {" +
+            "getCurrentPosition: function(success, error) {" +
+            "if (error) error({code: 1, message: 'Geolocation not supported'});" +
+            "}," +
+            "watchPosition: function(success, error) {" +
+            "if (error) error({code: 1, message: 'Geolocation not supported'});" +
+            "return 1;" +
+            "}," +
+            "clearWatch: function(id) {}" +
+            "};" +
+            "}" +
+            
+            "console.log('Camera and geolocation fixes applied');" +
+            "} catch(e) { console.log('Fix error: ' + e); }";
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mWebView.evaluateJavascript(jsCode, null);
+        } else {
+            mWebView.loadUrl("javascript:" + jsCode);
+        }
     }
-}
-    
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -415,10 +393,7 @@ private void autoLoginToWebsite() {
         if (mWebView.canGoBack()) {
             mWebView.goBack();
         } else {
-            // Kembali ke LoginActivity
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
+            super.onBackPressed();
         }
     }
 
