@@ -1,10 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#2196F3</color>
-    <color name="colorPrimaryDark">#1976D2</color>
-    <color name="colorAccent">#FF4081</color>
-
-<color name="white">#FFFFFF</color>
-<color name="light_blue">#38BDF8</color>
-<color name="white_transparent">#80FFFFFF</color>
-<color name="dark_blue">#0F172A</color>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Colors for Splash Screen -->
+    <color name="primary_color">#3F51B5</color>
+    <color name="primary_dark">#303F9F</color>
+    <color name="secondary_color">#FF4081</color>
+    <color name="background_color">#F5F5F5</color>
+    <color name="overlay_background">#B3000000</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="border_color">#E0E0E0</color>
+    <color name="grey">#9E9E9E</color>
+    
+    <!-- New Colors for SplashActivity -->
+    <color name="dark_blue">#0F172A</color>
+    <color name="light_blue">#38BDF8</color>
+    <color name="white_transparent">#80FFFFFF</color>
+    <color name="gradient_start">#0F172A</color>
+    <color name="gradient_end">#1E293B</color>
+    <color name="loading_bg">#1E293B</color>
+    <color name="loading_border">#334155</color>
 </resources>
