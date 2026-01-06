@@ -122,7 +122,7 @@ public class MainActivity extends Activity {
             if (allGranted) {
                 // Semua permission granted, setup WebView
                 setupWebView();
-                mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
+                mWebView.loadUrl("https://smk-maarif9kebumen.com/present/public/");
             } else {
                 // Beberapa permission ditolak
                 Toast.makeText(this, "Beberapa fitur mungkin tidak berfungsi tanpa izin yang diperlukan", Toast.LENGTH_LONG).show();
