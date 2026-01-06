@@ -56,29 +56,28 @@ public class MainActivity extends Activity {
     }
 
     private void checkCredentialsAndProceed() {
-        SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
-        String username = prefs.getString("username", "");
-        String password = prefs.getString("password", "");
-        
-        if (username.isEmpty() || password.isEmpty()) {
-            // TIDAK ADA CREDENTIALS - ke LoginActivity
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        } else {
-            // ADA CREDENTIALS - setup WebView dan load homepage
-            this.username = username;
-            this.password = password;
-            
-            Toast.makeText(this, "Selamat datang " + username, Toast.LENGTH_SHORT).show();
-            
-            // Cek dan minta permission sebelum setup WebView
-            if (checkAndRequestPermissions()) {
-                setupWebView();
-                mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
-            }
+    SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
+    String username = prefs.getString("username", "");
+    String password = prefs.getString("password", "");
+
+    if (username.isEmpty() || password.isEmpty()) {
+        // No credentials - back to Splash (will redirect to Login)
+        Intent intent = new Intent(this, SplashActivity.class);
+        startActivity(intent);
+        finish();
+    } else {
+        // Has credentials - proceed normally
+        this.username = username;
+        this.password = password;
+
+        Toast.makeText(this, "Selamat datang " + username, Toast.LENGTH_SHORT).show();
+
+        if (checkAndRequestPermissions()) {
+            setupWebView();
+            mWebView.loadUrl("https://smkmaarif9kebumen.sch.id/present/public/");
         }
     }
+}
 
     private boolean checkAndRequestPermissions() {
         List<String> permissionsNeeded = new ArrayList<>();
