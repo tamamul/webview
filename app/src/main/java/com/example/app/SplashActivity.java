@@ -9,13 +9,22 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import java.util.Random;
 
 public class SplashActivity extends Activity {
     
     private ProgressBar progressBar;
-    private TextView loadingText;
+    private TextView loadingText, tipText;
     private int progressStatus = 0;
     private Handler handler = new Handler();
+    
+    private String[] loadingTips = {
+        "Menyiapkan aplikasi...",
+        "Memuat data pengguna...",
+        "Menyiapkan sesi...",
+        "Memuat konten...",
+        "Mengoptimalkan performa..."
+    };
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,23 +39,38 @@ public class SplashActivity extends Activity {
         
         progressBar = findViewById(R.id.circularProgress);
         loadingText = findViewById(R.id.loadingText);
+        tipText = findViewById(R.id.tipText);
+        
+        // Set random tip
+        setRandomTip();
         
         // Start progress animation
         startLoadingAnimation();
     }
     
+    private void setRandomTip() {
+        Random random = new Random();
+        int index = random.nextInt(loadingTips.length);
+        tipText.setText(loadingTips[index]);
+    }
+    
     private void startLoadingAnimation() {
         new Thread(() -> {
             while (progressStatus < 100) {
-                progressStatus += 1;
+                progressStatus += 2;
                 
                 handler.post(() -> {
                     progressBar.setProgress(progressStatus);
                     loadingText.setText(progressStatus + "%");
+                    
+                    // Change tip at certain percentages
+                    if (progressStatus % 25 == 0) {
+                        setRandomTip();
+                    }
                 });
                 
                 try {
-                    Thread.sleep(30);
+                    Thread.sleep(40);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -74,6 +98,7 @@ public class SplashActivity extends Activity {
             }
             
             startActivity(intent);
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             finish();
         });
     }

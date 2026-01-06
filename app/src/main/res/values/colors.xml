@@ -8,23 +8,22 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- Colors for Splash Screen -->
-    <color name="primary_color">#3F51B5</color>
-    <color name="primary_dark">#303F9F</color>
-    <color name="secondary_color">#FF4081</color>
+    <!-- Tambahkan warna yang dibutuhkan -->
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    
+    <!-- For SplashActivity -->
+    <color name="dark_blue">#0F172A</color>
+    <color name="light_blue">#38BDF8</color>
+    <color name="white_transparent">#80FFFFFF</color>
+    <color name="loading_bg">#1E293B</color>
+    <color name="loading_border">#334155</color>
+    
+    <!-- For LoginActivity -->
     <color name="background_color">#F5F5F5</color>
-    <color name="overlay_background">#B3000000</color>
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
     <color name="border_color">#E0E0E0</color>
     <color name="grey">#9E9E9E</color>
-    
-    <!-- New Colors for SplashActivity -->
-    <color name="dark_blue">#0F172A</color>
-    <color name="light_blue">#38BDF8</color>
-    <color name="white_transparent">#80FFFFFF</color>
-    <color name="gradient_start">#0F172A</color>
-    <color name="gradient_end">#1E293B</color>
-    <color name="loading_bg">#1E293B</color>
-    <color name="loading_border">#334155</color>
 </resources>
