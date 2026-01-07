@@ -1,24 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SMK MAARIF 9</string>
-    <string name="app_full_name">SMK MAARIF 9 KEBUMEN</string>
-    
-    <!-- Splash Screen Strings -->
-    <string name="splash_welcome">Selamat Datang</string>
-    <string name="splash_loading">Memuat aplikasi...</string>
-    <string name="splash_first_time">Selamat datang pengguna baru!</string>
-    <string name="splash_returning">Selamat datang kembali!</string>
-    
-    <!-- Loading Tips -->
-    <string-array name="loading_tips">
-        <item>Menyiapkan aplikasi...</item>
-        <item>Memuat data pengguna...</item>
-        <item>Menyiapkan sesi...</item>
-        <item>Memuat konten...</item>
-        <item>Mengoptimalkan performa...</item>
-        <item>Menyiapkan antarmuka...</item>
-        <item>Memuat preferensi...</item>
-        <item>Menyiapkan cache...</item>
-        <item>Memeriksa koneksi...</item>
-        <item>Menyiapkan database...</item>
-    </string-array>
 </resources>
