@@ -5,9 +5,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
@@ -15,6 +18,9 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
@@ -29,11 +35,15 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> uploadMessage;
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
     private final static int PERMISSION_REQUEST_CODE = 100;
-
-    // Variables untuk credentials
-    private String username = "";
-    private String password = "";
-
+    private final static int NOTIFICATION_PERMISSION_CODE = 101;
+    
+    // Offline UI components
+    private LinearLayout offlineLayout;
+    private LinearLayout webViewLayout;
+    private TextView offlineTitle;
+    private TextView offlineMessage;
+    private Button retryButton;
+    
     // Daftar permission yang diperlukan
     private String[] requiredPermissions = {
             android.Manifest.permission.ACCESS_FINE_LOCATION,
@@ -41,21 +51,101 @@ public class MainActivity extends Activity {
             android.Manifest.permission.CAMERA,
             android.Manifest.permission.RECORD_AUDIO
     };
+    
+    // Notification permission untuk Android 13+
+    private String[] notificationPermission = {
+            android.Manifest.permission.POST_NOTIFICATIONS
+    };
 
     @Override
     @SuppressLint("SetJavaScriptEnabled")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
         
-        // Langsung buat WebView tanpa layout XML
-        mWebView = new WebView(this);
-        setContentView(mWebView);
+        // Initialize views
+        offlineLayout = findViewById(R.id.offline_layout);
+        webViewLayout = findViewById(R.id.webview_layout);
+        offlineTitle = findViewById(R.id.offline_title);
+        offlineMessage = findViewById(R.id.offline_message);
+        retryButton = findViewById(R.id.retry_button);
         
-        setupWebView();
-        mWebView.loadUrl("https://smk-maarif9kebumen.com/present/public/");
+        mWebView = findViewById(R.id.activity_main_webview);
         
-        // Cek permissions
+        // Handle deep link
+        handleDeepLink(getIntent());
+        
+        // Check network connection
+        if (isNetworkAvailable()) {
+            showWebView();
+            setupWebView();
+            mWebView.loadUrl("https://smk-maarif9kebumen.com/present/public/");
+        } else {
+            showOfflinePage();
+        }
+        
+        // Setup retry button
+        retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isNetworkAvailable()) {
+                    showWebView();
+                    mWebView.reload();
+                } else {
+                    Toast.makeText(MainActivity.this, "Masih offline. Periksa koneksi Anda.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        
+        // Check permissions
         checkAndRequestPermissions();
+        
+        // Request notification permission for Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) 
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, notificationPermission, NOTIFICATION_PERMISSION_CODE);
+            }
+        }
+    }
+    
+    private void handleDeepLink(Intent intent) {
+        if (intent != null && intent.getAction() != null) {
+            String action = intent.getAction();
+            Uri data = intent.getData();
+            
+            if (Intent.ACTION_VIEW.equals(action) && data != null) {
+                // Handle deep link
+                String url = data.toString();
+                if (url.startsWith("smkmaarif://")) {
+                    // You can handle specific deep links here
+                    Toast.makeText(this, "Deep link diterima", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+    
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = 
+                (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+    
+    private void showWebView() {
+        webViewLayout.setVisibility(View.VISIBLE);
+        offlineLayout.setVisibility(View.GONE);
+    }
+    
+    private void showOfflinePage() {
+        webViewLayout.setVisibility(View.GONE);
+        offlineLayout.setVisibility(View.VISIBLE);
+    }
+    
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleDeepLink(intent);
     }
 
     private void checkAndRequestPermissions() {
@@ -94,6 +184,10 @@ public class MainActivity extends Activity {
 
             if (!allGranted) {
                 Toast.makeText(this, "Beberapa fitur mungkin tidak berfungsi tanpa izin yang diperlukan", Toast.LENGTH_LONG).show();
+            }
+        } else if (requestCode == NOTIFICATION_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Notifikasi diaktifkan", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -184,6 +278,15 @@ public class MainActivity extends Activity {
             
             // Auto-fill jika ada saved credentials
             injectAutoLoginIfNeeded();
+        }
+        
+        @Override
+        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+            super.onReceivedError(view, errorCode, description, failingUrl);
+            // Handle web page error
+            if (!isNetworkAvailable()) {
+                showOfflinePage();
+            }
         }
     }
 
@@ -339,7 +442,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (mWebView.canGoBack()) {
+        if (mWebView != null && mWebView.canGoBack()) {
             mWebView.goBack();
         } else {
             super.onBackPressed();
@@ -351,6 +454,11 @@ public class MainActivity extends Activity {
         super.onResume();
         if (mWebView != null) {
             mWebView.onResume();
+        }
+        // Check network when resuming
+        if (isNetworkAvailable() && offlineLayout.getVisibility() == View.VISIBLE) {
+            showWebView();
+            mWebView.reload();
         }
     }
 
