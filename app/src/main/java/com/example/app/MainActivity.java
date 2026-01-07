@@ -205,7 +205,7 @@ public class MainActivity extends Activity {
         setupWebView();
         
         // Load URL
-        mWebView.loadUrl("https://smk-maarif9kebume.com/present/public/");
+        mWebView.loadUrl("https://smk-maarif9kebumen.com/present/public/");
     }
 
     private void checkCredentialsAndProceed() {
