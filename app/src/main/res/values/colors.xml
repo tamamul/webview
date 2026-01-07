@@ -8,16 +8,15 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- TAMBAHKAN SEMUA INI -->
-    <color name="loading_bg">#1E293B</color>
-    <color name="loading_border">#334155</color>
-    <color name="background_color">#F5F5F5</color>
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
-    <color name="grey">#9E9E9E</color>
-    <color name="dark_blue">#0F172A</color>
-    <color name="light_blue">#38BDF8</color>
-    <color name="white_transparent">#80FFFFFF</color>
-    <color name="border_color">#E0E0E0</color>
-    <color name="colorPrimary">#3F51B5</color>
+    <!-- Colors untuk Splash & Notifikasi -->
+    <color name="primary_blue">#2196F3</color>
+    <color name="dark_blue">#1976D2</color>
+    <color name="light_blue">#BBDEFB</color>
+    <color name="splash_background">#1A237E</color>
+    <color name="text_white">#FFFFFF</color>
+    <color name="text_grey">#9E9E9E</color>
+    
+    <!-- Notification colors -->
+    <color name="notification_color">#2196F3</color>
+    <color name="notification_text">#212121</color>
 </resources>
