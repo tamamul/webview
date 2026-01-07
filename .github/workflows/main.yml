@@ -71,8 +71,8 @@ EOF
 <resources>
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">#3F51B5</item>
-        <item name="colorPrimaryDark">#303F9F</color>
-        <item name="colorAccent">#FF4081</color>
+        <item name="colorPrimaryDark">#303F9F</item>
+        <item name="colorAccent">#FF4081</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
@@ -305,7 +305,7 @@ public class MainActivity extends Activity {
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, android.webkit.WebResourceRequest request) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLipOP) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 String url = request.getUrl().toString();
 
                 if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("whatsapp:")) {
