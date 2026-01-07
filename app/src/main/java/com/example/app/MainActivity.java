@@ -5,14 +5,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.view.Gravity;
-import android.view.Window;
-import android.view.WindowManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
@@ -20,10 +15,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
@@ -31,7 +22,6 @@ import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class MainActivity extends Activity {
 
@@ -39,15 +29,10 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> uploadMessage;
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
     private final static int PERMISSION_REQUEST_CODE = 100;
-    private final static int NOTIFICATION_PERMISSION_CODE = 101;
 
-    // Splash screen components
-    private FrameLayout splashContainer;
-    private LinearLayout splashContent;
-    private ProgressBar splashProgress;
-    private TextView splashText, splashTip;
-    private Handler splashHandler = new Handler();
-    private int splashProgressValue = 0;
+    // Variables untuk credentials
+    private String username = "";
+    private String password = "";
 
     // Daftar permission yang diperlukan
     private String[] requiredPermissions = {
@@ -57,112 +42,56 @@ public class MainActivity extends Activity {
             android.Manifest.permission.RECORD_AUDIO
     };
 
-    // Untuk Android 13+ butuh permission notification
-    private String[] notificationPermission = {
-            android.Manifest.permission.POST_NOTIFICATIONS
-    };
-
     @Override
     @SuppressLint("SetJavaScriptEnabled")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Coba pakai layout XML dulu
+        try {
+            setContentView(R.layout.activity_main);
+        } catch (Exception e) {
+            // Fallback ke WebView langsung
+            mWebView = new WebView(this);
+            setContentView(mWebView);
+            setupWebView();
+            mWebView.loadUrl("https://smk-maarif9kebumen.com/present/public/");
+            return;
+        }
 
-        // Fullscreen
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-        // Tampilkan splash screen terlebih dahulu
-        showSplashScreen();
-
-        // Setup notifikasi pengingat
-        setupPresensiReminder();
-
-        // Langsung ke WebView tanpa cek credentials
-        proceedToWebView();
-    }
-
-    private void showSplashScreen() {
-        // ... [kode splash screen sama seperti sebelumnya]
-        // Tetap pertahankan kode splash screen yang ada
-    }
-
-    private void startSplashAnimation() {
-        // ... [kode animasi sama seperti sebelumnya]
-    }
-
-    private void hideSplashScreen() {
-        splashContainer.animate()
-                .alpha(0f)
-                .setDuration(300)
-                .withEndAction(() -> {
-                    setupMainLayout();
-                })
-                .start();
-    }
-
-    private void setupMainLayout() {
-        setContentView(R.layout.activity_main);
         mWebView = findViewById(R.id.activity_main_webview);
+        
+        if (mWebView == null) {
+            // Fallback jika WebView tidak ditemukan di layout
+            mWebView = new WebView(this);
+            setContentView(mWebView);
+        }
+        
         setupWebView();
         mWebView.loadUrl("https://smk-maarif9kebumen.com/present/public/");
-    }
-
-    private void proceedToWebView() {
-        splashHandler.postDelayed(() -> {
-            // Cek permission untuk notifications (Android 13+)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) 
-                        != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this, notificationPermission, NOTIFICATION_PERMISSION_CODE);
-                }
-            }
-
-            // Hide splash dan tampilkan WebView
-            hideSplashScreen();
-
-            // Cek permissions untuk WebView
-            if (checkAndRequestPermissions()) {
-                // Permissions sudah granted
-            } else {
-                Toast.makeText(this, "Mohon berikan izin yang diperlukan", Toast.LENGTH_SHORT).show();
-            }
-        }, 3000);
-    }
-
-    private void setupPresensiReminder() {
-        // Setup alarm untuk notifikasi pengingat menggunakan PresensiReminder
-        PresensiReminder.setupPresensiReminder(this);
         
-        // Juga schedule ulang jika device reboot
-        scheduleAlarmOnBoot();
-    }
-    
-    private void scheduleAlarmOnBoot() {
-        // Untuk menangani jika device reboot, alarm perlu di-setup ulang
-        // Kita akan menggunakan BootReceiver (opsional)
-        // Untuk sekarang, kita akan setup langsung dari sini
+        // Cek permissions
+        checkAndRequestPermissions();
     }
 
-    private boolean checkAndRequestPermissions() {
+    private void checkAndRequestPermissions() {
         List<String> permissionsNeeded = new ArrayList<>();
 
+        // Cek setiap permission
         for (String permission : requiredPermissions) {
             if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
                 permissionsNeeded.add(permission);
             }
         }
 
+        // Jika ada permission yang belum granted, minta izin
         if (!permissionsNeeded.isEmpty()) {
             ActivityCompat.requestPermissions(
                     this,
                     permissionsNeeded.toArray(new String[0]),
                     PERMISSION_REQUEST_CODE
             );
-            return false;
         }
-
-        return true;
     }
 
     @Override
@@ -179,65 +108,68 @@ public class MainActivity extends Activity {
                 }
             }
 
-            if (allGranted) {
-                Toast.makeText(this, "Izinkan akses untuk fitur lengkap", Toast.LENGTH_SHORT).show();
-            } else {
+            if (!allGranted) {
                 Toast.makeText(this, "Beberapa fitur mungkin tidak berfungsi tanpa izin yang diperlukan", Toast.LENGTH_LONG).show();
-            }
-        } else if (requestCode == NOTIFICATION_PERMISSION_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Notifikasi pengingat presensi diaktifkan", Toast.LENGTH_SHORT).show();
-                // Setup ulang alarm dengan permission yang sudah diberikan
-                PresensiReminder.setupPresensiReminder(this);
             }
         }
     }
 
     private void setupWebView() {
-        if (mWebView == null) return;
-
         WebSettings webSettings = mWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        webSettings.setDatabaseEnabled(true);
-        webSettings.setGeolocationEnabled(true);
-        
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            webSettings.setGeolocationDatabasePath(getFilesDir().getPath());
-        }
 
+        // Enable JavaScript
+        webSettings.setJavaScriptEnabled(true);
+
+        // Enable DOM storage
+        webSettings.setDomStorageEnabled(true);
+
+        // Enable database
+        webSettings.setDatabaseEnabled(true);
+
+        // Enable geolocation
+        webSettings.setGeolocationEnabled(true);
+
+        // Enable zoom controls
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
+
+        // Enable wide viewport
         webSettings.setUseWideViewPort(true);
         webSettings.setLoadWithOverviewMode(true);
 
+        // Enable mixed content (for HTTP/HTTPS)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
 
+        // Cache settings
         webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+
+        // Enable other important settings
         webSettings.setAllowFileAccess(true);
         webSettings.setAllowContentAccess(true);
+
+        // Important for camera access and WebRTC
         webSettings.setMediaPlaybackRequiresUserGesture(false);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            webSettings.setAllowFileAccessFromFileURLs(true);
-            webSettings.setAllowUniversalAccessFromFileURLs(true);
-        }
-
+        // Set WebViewClient to handle links internally
         mWebView.setWebViewClient(new MyWebViewClient());
+
+        // Set WebChromeClient for permissions, file upload, etc.
         mWebView.setWebChromeClient(new MyWebChromeClient());
     }
 
     private class MyWebViewClient extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            // Handle all URLs within WebView
             if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("whatsapp:")) {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 startActivity(intent);
                 return true;
             }
 
+            // Load all other URLs in WebView
             view.loadUrl(url);
             return true;
         }
@@ -262,7 +194,11 @@ public class MainActivity extends Activity {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
+            
+            // Inject JavaScript untuk handle camera dan geolocation
             injectCameraAndGeolocationFallback();
+            
+            // Auto-fill jika ada saved credentials
             injectAutoLoginIfNeeded();
         }
     }
@@ -302,6 +238,7 @@ public class MainActivity extends Activity {
     private class MyWebChromeClient extends WebChromeClient {
         @Override
         public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+            // Always grant location permission
             callback.invoke(origin, true, false);
         }
 
@@ -310,11 +247,13 @@ public class MainActivity extends Activity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    // Grant semua permission yang diminta
                     request.grant(request.getResources());
                 }
             });
         }
 
+        // For file upload (Lollipop and above)
         @Override
         public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
             if (uploadMessage != null) {
@@ -332,6 +271,7 @@ public class MainActivity extends Activity {
             return true;
         }
 
+        // For Android < 5.0
         public void openFileChooser(ValueCallback<Uri> uploadMsg) {
             openFileChooser(uploadMsg, "*/*");
         }
@@ -348,9 +288,11 @@ public class MainActivity extends Activity {
         }
     }
 
+    // Inject JavaScript fallback untuk camera dan geolocation
     private void injectCameraAndGeolocationFallback() {
         String jsCode = 
             "try {" +
+            "// Fix untuk getUserMedia" +
             "if (navigator.mediaDevices && !navigator.mediaDevices.getUserMedia) {" +
             "navigator.mediaDevices.getUserMedia = function(constraints) {" +
             "return new Promise(function(resolve, reject) {" +
@@ -359,10 +301,12 @@ public class MainActivity extends Activity {
             "};" +
             "}" +
 
+            "// Backup untuk navigator.getUserMedia lama" +
             "if (!navigator.getUserMedia) {" +
             "navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;" +
             "}" +
 
+            "// Fix untuk geolocation" +
             "if (!navigator.geolocation) {" +
             "navigator.geolocation = {" +
             "getCurrentPosition: function(success, error) {" +
@@ -375,6 +319,7 @@ public class MainActivity extends Activity {
             "clearWatch: function(id) {}" +
             "};" +
             "}" +
+
             "console.log('Camera and geolocation fixes applied');" +
             "} catch(e) { console.log('Fix error: ' + e); }";
 
@@ -410,7 +355,7 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (mWebView != null && mWebView.canGoBack()) {
+        if (mWebView.canGoBack()) {
             mWebView.goBack();
         } else {
             super.onBackPressed();
