@@ -1,4 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SMK MAARIF 9</string>
+    <string name="app_name">Absen-MARSA</string>
+    <string name="app_full_name">Aplikasi Presensi SMK MAARIF 9</string>
+    
+    <!-- Splash Screen -->
+    <string name="splash_loading">Memuat aplikasi...</string>
+    <string name="splash_welcome">Selamat Datang di</string>
+    
+    <!-- Notification Messages -->
+    <string name="notification_channel_name">Pengingat Presensi</string>
+    <string name="notification_channel_description">Notifikasi pengingat untuk presensi harian</string>
+    
+    <string name="notification_masuk_title">⏰ Waktunya Presensi Masuk!</string>
+    <string name="notification_masuk_body">Jangan lupa melakukan presensi masuk hari ini. Tap untuk membuka aplikasi.</string>
+    
+    <string name="notification_pulang_title">🏠 Waktunya Presensi Pulang!</string>
+    <string name="notification_pulang_body">Jangan lupa melakukan presensi pulang sebelum pulang sekolah. Tap untuk membuka aplikasi.</string>
+    
+    <string name="notification_tap_action">Buka Aplikasi</string>
+    
+    <!-- Offline Messages -->
+    <string name="offline_title">Tidak Ada Koneksi Internet</string>
+    <string name="offline_message">Periksa koneksi internet Anda dan coba lagi.</string>
+    <string name="retry_button">Coba Lagi</string>
 </resources>
