@@ -7,21 +7,4 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    
-    <!-- Tambahkan warna-warna yang dibutuhkan -->
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
-    
-    <!-- Colors untuk splash dan login -->
-    <color name="dark_blue">#0F172A</color>
-    <color name="light_blue">#38BDF8</color>
-    <color name="white_transparent">#80FFFFFF</color>
-    <color name="loading_bg">#1E293B</color>
-    <color name="loading_border">#334155</color>
-    <color name="background_color">#F5F5F5</color>
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
-    <color name="border_color">#E0E0E0</color>
-    <color name="grey">#9E9E9E</color>
 </resources>
