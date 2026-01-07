@@ -14,6 +14,15 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    
+    <!-- Notifikasi permission untuk Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
+    <!-- Alarm permission -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <!-- Camera features -->
     <uses-feature android:name="android.hardware.camera" />
@@ -40,13 +49,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Login Activity -->
-        <activity
-            android:name=".LoginActivity"
-            android:exported="false"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="portrait" />
 
         <!-- Provider untuk file sharing (opsional) -->
         <provider
