@@ -15,7 +15,8 @@ import java.util.Calendar;
 
 public class NotificationScheduler {
     
-    private static final String CHANNEL_ID = "presensi_channel";
+    // UBAH DARI PRIVATE KE PUBLIC
+    public static final String CHANNEL_ID = "presensi_channel";
     private static final String CHANNEL_NAME = "Pengingat Presensi";
     private static final int NOTIFICATION_ID_MASUK = 1001;
     private static final int NOTIFICATION_ID_PULANG = 1002;
@@ -35,9 +36,6 @@ public class NotificationScheduler {
                 context.getString(R.string.notification_pulang_title),
                 context.getString(R.string.notification_pulang_body),
                 NOTIFICATION_ID_PULANG);
-        
-        // Show immediate notification for testing (comment in production)
-        // showTestNotification(context);
     }
     
     private static void createNotificationChannel(Context context) {
