@@ -47,25 +47,9 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Coba pakai layout XML dulu
-        try {
-            setContentView(R.layout.activity_main);
-        } catch (Exception e) {
-            // Fallback ke WebView langsung
-            mWebView = new WebView(this);
-            setContentView(mWebView);
-            setupWebView();
-            mWebView.loadUrl("https://smk-maarif9kebumen.com/present/public/");
-            return;
-        }
-
-        mWebView = findViewById(R.id.activity_main_webview);
-        
-        if (mWebView == null) {
-            // Fallback jika WebView tidak ditemukan di layout
-            mWebView = new WebView(this);
-            setContentView(mWebView);
-        }
+        // Langsung buat WebView tanpa layout XML
+        mWebView = new WebView(this);
+        setContentView(mWebView);
         
         setupWebView();
         mWebView.loadUrl("https://smk-maarif9kebumen.com/present/public/");
