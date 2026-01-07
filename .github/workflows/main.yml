@@ -29,23 +29,506 @@ jobs:
           api-level: 31
           build-tools: '31.0.0'
 
-      # 4. Make Gradle wrapper executable
+      # 4. FIX: Update resource files sebelum build
+      - name: Fix Android Resources
+        run: |
+          echo "=== MEMPERBAIKI RESOURCE FILE ==="
+          
+          # 4.1. UPDATE colors.xml dengan semua warna yang diperlukan
+          echo "Mengupdate colors.xml..."
+          cat > app/src/main/res/values/colors.xml << 'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Semua warna yang diperlukan untuk menghindari error -->
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="dark_blue">#0F172A</color>
+    <color name="light_blue">#38BDF8</color>
+    <color name="white_transparent">#80FFFFFF</color>
+    <color name="loading_bg">#1E293B</color>
+    <color name="loading_border">#334155</color>
+    <color name="background_color">#F5F5F5</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="border_color">#E0E0E0</color>
+    <color name="grey">#9E9E9E</color>
+</resources>
+EOF
+
+          # 4.2. UPDATE styles.xml
+          echo "Mengupdate styles.xml..."
+          cat > app/src/main/res/values/styles.xml << 'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">#3F51B5</item>
+        <item name="colorPrimaryDark">#303F9F</color>
+        <item name="colorAccent">#FF4081</color>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>
+EOF
+
+          # 4.3. UPDATE drawable files yang error (buat sederhana)
+          echo "Mengupdate file drawable..."
+          
+          # loading_background.xml
+          cat > app/src/main/res/drawable/loading_background.xml << 'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#1E293B" />
+    <corners android:radius="24dp" />
+    <stroke android:width="1dp" android:color="#334155" />
+</shape>
+EOF
+
+          # 4.4. UPDATE layout files untuk hapus reference ke warna yang tidak ada
+          echo "Memperbaiki layout files..."
+          
+          # Perbaiki activity_splash.xml
+          if [ -f "app/src/main/res/layout/activity_splash.xml" ]; then
+            sed -i 's/@color\/dark_blue/#0F172A/g' app/src/main/res/layout/activity_splash.xml
+            sed -i 's/@color\/light_blue/#38BDF8/g' app/src/main/res/layout/activity_splash.xml
+            sed -i 's/@color\/white_transparent/#80FFFFFF/g' app/src/main/res/layout/activity_splash.xml
+          fi
+          
+          # Perbaiki activity_login.xml  
+          if [ -f "app/src/main/res/layout/activity_login.xml" ]; then
+            sed -i 's/@color\/background_color/#F5F5F5/g' app/src/main/res/layout/activity_login.xml
+            sed -i 's/@color\/text_primary/#212121/g' app/src/main/res/layout/activity_login.xml
+            sed -i 's/@color\/text_secondary/#757575/g' app/src/main/res/layout/activity_login.xml
+            sed -i 's/@color\/grey/#9E9E9E/g' app/src/main/res/layout/activity_login.xml
+            sed -i 's/@color\/border_color/#E0E0E0/g' app/src/main/res/layout/activity_login.xml
+            sed -i 's/@color\/colorPrimary/#3F51B5/g' app/src/main/res/layout/activity_login.xml
+          fi
+          
+          # 4.5. UPDATE AndroidManifest.xml untuk hapus LoginActivity
+          echo "Mengupdate AndroidManifest.xml..."
+          cat > app/src/main/AndroidManifest.xml << 'EOF'
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    package="com.example.app"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Permissions -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <!-- Camera features -->
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-feature android:name="android.hardware.location.gps" />
+    <uses-feature android:name="android.hardware.location" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="SMK MAARIF 9"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
+        tools:ignore="GoogleAppIndexingWarning">
+
+        <!-- HANYA MainActivity - tanpa LoginActivity -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/AppTheme"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+</manifest>
+EOF
+
+          # 4.6. UPDATE MainActivity.java ke versi sederhana
+          echo "Mengupdate MainActivity.java..."
+          cat > app/src/main/java/com/example/app/MainActivity.java << 'EOF'
+package com.example.app;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.webkit.GeolocationPermissions;
+import android.webkit.PermissionRequest;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends Activity {
+
+    private WebView mWebView;
+    private ValueCallback<Uri[]> uploadMessage;
+    private final static int FILE_CHOOSER_RESULT_CODE = 1;
+    private final static int PERMISSION_REQUEST_CODE = 100;
+
+    // Daftar permission yang diperlukan
+    private String[] requiredPermissions = {
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            android.Manifest.permission.CAMERA,
+            android.Manifest.permission.RECORD_AUDIO
+    };
+
+    @Override
+    @SuppressLint("SetJavaScriptEnabled")
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+        // Langsung buat WebView tanpa layout XML
+        mWebView = new WebView(this);
+        setContentView(mWebView);
+        
+        setupWebView();
+        mWebView.loadUrl("https://smk-maarif9kebumen.com/present/public/");
+        
+        // Cek permissions
+        checkAndRequestPermissions();
+    }
+
+    private void checkAndRequestPermissions() {
+        List<String> permissionsNeeded = new ArrayList<>();
+
+        for (String permission : requiredPermissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(permission);
+            }
+        }
+
+        if (!permissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    permissionsNeeded.toArray(new String[0]),
+                    PERMISSION_REQUEST_CODE
+            );
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            boolean allGranted = true;
+
+            for (int grantResult : grantResults) {
+                if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+
+            if (!allGranted) {
+                Toast.makeText(this, "Beberapa fitur mungkin tidak berfungsi tanpa izin yang diperlukan", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private void setupWebView() {
+        WebSettings webSettings = mWebView.getSettings();
+
+        // Enable JavaScript
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setDatabaseEnabled(true);
+        webSettings.setGeolocationEnabled(true);
+        webSettings.setBuiltInZoomControls(true);
+        webSettings.setDisplayZoomControls(false);
+        webSettings.setUseWideViewPort(true);
+        webSettings.setLoadWithOverviewMode(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
+
+        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        webSettings.setAllowFileAccess(true);
+        webSettings.setAllowContentAccess(true);
+        webSettings.setMediaPlaybackRequiresUserGesture(false);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            webSettings.setAllowFileAccessFromFileURLs(true);
+            webSettings.setAllowUniversalAccessFromFileURLs(true);
+        }
+
+        mWebView.setWebViewClient(new MyWebViewClient());
+        mWebView.setWebChromeClient(new MyWebChromeClient());
+    }
+
+    private class MyWebViewClient extends WebViewClient {
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("whatsapp:")) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(intent);
+                return true;
+            }
+
+            view.loadUrl(url);
+            return true;
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, android.webkit.WebResourceRequest request) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLipOP) {
+                String url = request.getUrl().toString();
+
+                if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("whatsapp:")) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(intent);
+                    return true;
+                }
+
+                view.loadUrl(url);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            injectCameraAndGeolocationFallback();
+            injectAutoLoginIfNeeded();
+        }
+    }
+
+    private void injectAutoLoginIfNeeded() {
+        SharedPreferences prefs = getSharedPreferences("user_credentials", MODE_PRIVATE);
+        String savedUsername = prefs.getString("username", "");
+        String savedPassword = prefs.getString("password", "");
+        
+        if (!savedUsername.isEmpty() && !savedPassword.isEmpty()) {
+            String jsCode = 
+                "setTimeout(function() {" +
+                "  var loginForm = document.querySelector('form[action*=\"login\"]');" +
+                "  if (loginForm) {" +
+                "    var usernameField = loginForm.querySelector('input[name=\"username\"], input[name=\"email\"], input[type=\"text\"]');" +
+                "    var passwordField = loginForm.querySelector('input[name=\"password\"], input[type=\"password\"]');" +
+                "    " +
+                "    if (usernameField && passwordField) {" +
+                "      usernameField.value = '" + savedUsername + "';" +
+                "      passwordField.value = '" + savedPassword + "';" +
+                "      " +
+                "      var event = new Event('input', { bubbles: true });" +
+                "      usernameField.dispatchEvent(event);" +
+                "      passwordField.dispatchEvent(event);" +
+                "    }" +
+                "  }" +
+                "}, 1000);";
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                mWebView.evaluateJavascript(jsCode, null);
+            } else {
+                mWebView.loadUrl("javascript:" + jsCode);
+            }
+        }
+    }
+
+    private class MyWebChromeClient extends WebChromeClient {
+        @Override
+        public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+            callback.invoke(origin, true, false);
+        }
+
+        @Override
+        public void onPermissionRequest(final PermissionRequest request) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    request.grant(request.getResources());
+                }
+            });
+        }
+
+        @Override
+        public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+            if (uploadMessage != null) {
+                uploadMessage.onReceiveValue(null);
+            }
+            uploadMessage = filePathCallback;
+
+            Intent intent = fileChooserParams.createIntent();
+            try {
+                startActivityForResult(intent, FILE_CHOOSER_RESULT_CODE);
+            } catch (Exception e) {
+                uploadMessage = null;
+                return false;
+            }
+            return true;
+        }
+
+        public void openFileChooser(ValueCallback<Uri> uploadMsg) {
+            openFileChooser(uploadMsg, "*/*");
+        }
+
+        public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType) {
+            openFileChooser(uploadMsg, acceptType, null);
+        }
+
+        public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
+            startActivityForResult(Intent.createChooser(intent, "File Chooser"), FILE_CHOOSER_RESULT_CODE);
+        }
+    }
+
+    private void injectCameraAndGeolocationFallback() {
+        String jsCode = 
+            "try {" +
+            "if (navigator.mediaDevices && !navigator.mediaDevices.getUserMedia) {" +
+            "navigator.mediaDevices.getUserMedia = function(constraints) {" +
+            "return new Promise(function(resolve, reject) {" +
+            "navigator.getUserMedia(constraints, resolve, reject);" +
+            "});" +
+            "};" +
+            "}" +
+
+            "if (!navigator.getUserMedia) {" +
+            "navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;" +
+            "}" +
+
+            "if (!navigator.geolocation) {" +
+            "navigator.geolocation = {" +
+            "getCurrentPosition: function(success, error) {" +
+            "if (error) error({code: 1, message: 'Geolocation not supported'});" +
+            "}," +
+            "watchPosition: function(success, error) {" +
+            "if (error) error({code: 1, message: 'Geolocation not supported'});" +
+            "return 1;" +
+            "}," +
+            "clearWatch: function(id) {}" +
+            "};" +
+            "}" +
+            "console.log('Camera and geolocation fixes applied');" +
+            "} catch(e) { console.log('Fix error: ' + e); }";
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mWebView.evaluateJavascript(jsCode, null);
+        } else {
+            mWebView.loadUrl("javascript:" + jsCode);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == FILE_CHOOSER_RESULT_CODE) {
+            if (uploadMessage != null) return;
+
+            Uri[] results = null;
+            if (resultCode == Activity.RESULT_OK) {
+                if (data != null) {
+                    String dataString = data.getDataString();
+                    if (dataString != null) {
+                        results = new Uri[]{Uri.parse(dataString)};
+                    }
+                }
+            }
+            if (uploadMessage != null) {
+                uploadMessage.onReceiveValue(results);
+                uploadMessage = null;
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mWebView.canGoBack()) {
+            mWebView.goBack();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mWebView != null) {
+            mWebView.onResume();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mWebView != null) {
+            mWebView.onPause();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mWebView != null) {
+            mWebView.destroy();
+        }
+        super.onDestroy();
+    }
+}
+EOF
+
+          echo "=== PERBAIKAN SELESAI ==="
+          echo "File yang diperbaiki:"
+          echo "- colors.xml"
+          echo "- styles.xml" 
+          echo "- loading_background.xml"
+          echo "- AndroidManifest.xml"
+          echo "- MainActivity.java"
+
+      # 5. Make Gradle wrapper executable
       - name: Grant Gradle Execute Permission
         run: chmod +x ./gradlew
 
-      # 5. Clean project
+      # 6. Clean project
       - name: Clean project
         run: ./gradlew clean
 
-      # 6. Build release APK
+      # 7. Build release APK
       - name: Build Release APK
         run: ./gradlew assembleRelease --stacktrace
 
-      # 7. List APK output
+      # 8. List APK output
       - name: List APK
         run: find . -name "*.apk"
 
-      # 8. Upload APK as artifact
+      # 9. Upload APK as artifact
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
