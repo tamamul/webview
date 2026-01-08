@@ -11,16 +11,16 @@
     <string name="notification_channel_name">Pengingat Presensi</string>
     <string name="notification_channel_description">Notifikasi pengingat untuk presensi harian</string>
     
-    <string name="notification_masuk_title">⏰ Waktunya Presensi Masuk!</string>
-    <string name="notification_masuk_body">Jangan lupa melakukan presensi masuk hari ini. Tap untuk membuka aplikasi.</string>
+    <string name="notification_masuk_title">⏰ Waktunya Absen Masuk!</string>
+    <string name="notification_masuk_body">Ampun kesupen Absen masuk hari ini. Tap untuk membuka aplikasi.</string>
     
-    <string name="notification_pulang_title">🏠 Waktunya Presensi Pulang!</string>
-    <string name="notification_pulang_body">Jangan lupa melakukan presensi pulang sebelum pulang sekolah. Tap untuk membuka aplikasi.</string>
+    <string name="notification_pulang_title">🏠 Waktunya Absen Pulang!</string>
+    <string name="notification_pulang_body">Ampun kesupen absen pulang sederengipun kondur saking sekolah. Tap untuk membuka aplikasi.</string>
     
     <string name="notification_tap_action">Buka Aplikasi</string>
     
     <!-- Offline Messages -->
     <string name="offline_title">Tidak Ada Koneksi Internet</string>
-    <string name="offline_message">Periksa koneksi internet Anda dan coba lagi.</string>
+    <string name="offline_message">Periksa koneksi internet Panjenengan dan coba lagi.</string>
     <string name="retry_button">Coba Lagi</string>
 </resources>
