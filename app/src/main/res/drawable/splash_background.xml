@@ -1,35 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Base deep color -->
+    <!-- True black base (AMOLED killer) -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#020617" />
+            <solid android:color="#000000" />
         </shape>
     </item>
 
-    <!-- Main premium gradient -->
+    <!-- Deep cyan gradient (premium core) -->
     <item>
         <shape android:shape="rectangle">
             <gradient
                 android:type="linear"
                 android:angle="135"
-                android:startColor="#0F172A"
-                android:centerColor="#111827"
-                android:endColor="#1E293B" />
+                android:startColor="#022C2C"
+                android:centerColor="#083344"
+                android:endColor="#0E7490" />
         </shape>
     </item>
 
-    <!-- Soft highlight (depth effect) -->
+    <!-- Cyan glow light sweep -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="linear"
+                android:angle="45"
+                android:startColor="#33ECFEFF"
+                android:centerColor="#15ECFEFF"
+                android:endColor="#00ECFEFF" />
+        </shape>
+    </item>
+
+    <!-- Premium vignette (focus effect) -->
     <item>
         <shape android:shape="rectangle">
             <gradient
                 android:type="radial"
-                android:gradientRadius="900dp"
-                android:centerX="30%"
-                android:centerY="20%"
-                android:startColor="#26FFFFFF"
-                android:endColor="#00FFFFFF" />
+                android:gradientRadius="1200dp"
+                android:centerX="50%"
+                android:centerY="50%"
+                android:startColor="#00000000"
+                android:endColor="#88000000" />
         </shape>
     </item>
 
