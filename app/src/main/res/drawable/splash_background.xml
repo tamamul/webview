@@ -6,8 +6,13 @@
         </shape>
     </item>
     <item>
-        <bitmap
-            android:src="@drawable/bg_gradient"
-            android:gravity="fill" />
+        <!-- GANTI BITMAP DENGAN SHAPE -->
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#0F172A"
+                android:endColor="#1E293B"
+                android:angle="135"
+                android:type="linear" />
+        </shape>
     </item>
 </layer-list>
