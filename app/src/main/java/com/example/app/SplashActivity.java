@@ -18,7 +18,6 @@ import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
-import androidx.core.content.ContextCompat;
 
 public class SplashActivity extends Activity {
 
@@ -27,7 +26,6 @@ public class SplashActivity extends Activity {
     private ImageView logo;
     private TextView appName;
     private TextView loadingText;
-    private View backgroundOverlay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +37,6 @@ public class SplashActivity extends Activity {
         setContentView(R.layout.activity_splash);
         
         initializeViews();
-        setupBackgroundAnimation();
         startLogoAnimation();
         startTextAnimation();
         startLoadingIndicator();
@@ -73,22 +70,11 @@ public class SplashActivity extends Activity {
         logo = findViewById(R.id.splash_logo);
         appName = findViewById(R.id.splash_app_name);
         loadingText = findViewById(R.id.splash_loading_text);
-        backgroundOverlay = findViewById(R.id.splash_background_overlay);
         
         // Set initial alpha untuk animasi
         logo.setAlpha(0f);
         appName.setAlpha(0f);
         loadingText.setAlpha(0f);
-    }
-
-    private void setupBackgroundAnimation() {
-        // Gradient background animation
-        if (backgroundOverlay != null) {
-            AlphaAnimation bgAnimation = new AlphaAnimation(0.3f, 1.0f);
-            bgAnimation.setDuration(2000);
-            bgAnimation.setFillAfter(true);
-            backgroundOverlay.startAnimation(bgAnimation);
-        }
     }
 
     private void startLogoAnimation() {
@@ -213,18 +199,26 @@ public class SplashActivity extends Activity {
     }
 
     private void startLoadingIndicator() {
-        // Optional: Tambahkan progress bar atau loading indicator
-        // Jika ada di layout, tambahkan animasi di sini
-        View progressBar = findViewById(R.id.splash_progress);
-        if (progressBar != null) {
-            RotateAnimation rotate = new RotateAnimation(
-                    0f, 360f,
-                    Animation.RELATIVE_TO_SELF, 0.5f,
-                    Animation.RELATIVE_TO_SELF, 0.5f
-            );
-            rotate.setDuration(1000);
-            rotate.setRepeatCount(Animation.INFINITE);
-            progressBar.startAnimation(rotate);
+        // Optional: Cek jika ada progress bar di layout
+        try {
+            // Mencoba mencari progress bar dengan ID yang mungkin
+            int progressBarId = getResources().getIdentifier("splash_progress", "id", getPackageName());
+            if (progressBarId != 0) {
+                View progressBar = findViewById(progressBarId);
+                if (progressBar != null) {
+                    RotateAnimation rotate = new RotateAnimation(
+                            0f, 360f,
+                            Animation.RELATIVE_TO_SELF, 0.5f,
+                            Animation.RELATIVE_TO_SELF, 0.5f
+                    );
+                    rotate.setDuration(1000);
+                    rotate.setRepeatCount(Animation.INFINITE);
+                    progressBar.startAnimation(rotate);
+                }
+            }
+        } catch (Exception e) {
+            // Jika tidak ada progress bar, tidak perlu melakukan apa-apa
+            e.printStackTrace();
         }
     }
 
@@ -275,8 +269,23 @@ public class SplashActivity extends Activity {
     private void navigateToMain() {
         Intent intent = new Intent(SplashActivity.this, MainActivity.class);
         startActivity(intent);
+        
         // Enhanced transition animation
-        overridePendingTransition(R.anim.fade_in_enhanced, R.anim.fade_out_enhanced);
+        try {
+            // Coba gunakan animasi custom jika ada
+            int fadeInId = getResources().getIdentifier("fade_in_enhanced", "anim", getPackageName());
+            int fadeOutId = getResources().getIdentifier("fade_out_enhanced", "anim", getPackageName());
+            
+            if (fadeInId != 0 && fadeOutId != 0) {
+                overridePendingTransition(fadeInId, fadeOutId);
+            } else {
+                // Fallback ke animasi default
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            }
+        } catch (Exception e) {
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        }
+        
         finish();
     }
 
