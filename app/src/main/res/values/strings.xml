@@ -2,11 +2,12 @@
 <resources>
     <string name="app_name">Absen-MARSA</string>
     <string name="app_full_name">Aplikasi Presensi SMK MAARIF 9</string>
-    
-    <!-- Splash Screen -->
-    <string name="splash_loading">Memuat aplikasi...</string>
+
+    <!-- Splash Screen - FIX NAMA -->
+    <string name="splash_app_name">Absen-MARSA</string>  <!-- NAMA BARU -->
+    <string name="splash_loading_text">Memuat aplikasi...</string>  <!-- NAMA BARU -->
     <string name="splash_welcome">Selamat Datang di</string>
-    
+
     <!-- Notification Messages -->
     <string name="notification_channel_name">Pengingat Presensi</string>
     <string name="notification_channel_description">Notifikasi pengingat untuk presensi harian</string>
