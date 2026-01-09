@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -37,9 +38,12 @@ public class SplashActivity extends Activity {
         setContentView(R.layout.activity_splash);
         
         initializeViews();
+        
+        // Pastikan teks muncul sebelum animasi dimulai
+        ensureTextVisible();
+        
         startLogoAnimation();
         startTextAnimation();
-        startLoadingIndicator();
         
         // Setup notification service di background
         NotificationScheduler.setupDailyNotifications(this);
@@ -71,29 +75,63 @@ public class SplashActivity extends Activity {
         appName = findViewById(R.id.splash_app_name);
         loadingText = findViewById(R.id.splash_loading_text);
         
-        // Set initial alpha untuk animasi
-        logo.setAlpha(0f);
-        appName.setAlpha(0f);
-        loadingText.setAlpha(0f);
+        // DEBUG LOG
+        Log.d("SplashDebug", "=== INITIALIZE VIEWS ===");
+        Log.d("SplashDebug", "Logo: " + (logo != null ? "FOUND" : "NULL"));
+        Log.d("SplashDebug", "AppName: " + (appName != null ? "FOUND" : "NULL"));
+        Log.d("SplashDebug", "LoadingText: " + (loadingText != null ? "FOUND" : "NULL"));
+        
+        if (appName != null) {
+            Log.d("SplashDebug", "AppName text: " + appName.getText());
+            Log.d("SplashDebug", "AppName color: " + appName.getCurrentTextColor());
+            // Force set text color putih jika gelap
+            appName.setTextColor(Color.WHITE);
+        }
+        
+        if (loadingText != null) {
+            loadingText.setTextColor(Color.WHITE);
+        }
+    }
+
+    private void ensureTextVisible() {
+        // Pastikan teks visible dan dengan warna yang kontras
+        new Handler().postDelayed(() -> {
+            if (appName != null) {
+                appName.setVisibility(View.VISIBLE);
+                appName.setTextColor(Color.WHITE);
+                appName.bringToFront();
+            }
+            
+            if (loadingText != null) {
+                loadingText.setVisibility(View.VISIBLE);
+                loadingText.setTextColor(Color.WHITE);
+                loadingText.bringToFront();
+            }
+        }, 100);
     }
 
     private void startLogoAnimation() {
+        if (logo == null) {
+            Log.e("SplashDebug", "Logo is null, cannot start animation");
+            return;
+        }
+        
         // Animation Set: Scale + Rotate + Fade
         AnimationSet logoAnimationSet = new AnimationSet(true);
         logoAnimationSet.setInterpolator(new AccelerateDecelerateInterpolator());
         
         // Scale animation (zoom out dari besar)
         ScaleAnimation scaleAnim = new ScaleAnimation(
-                1.5f, 1.0f, // Scale X dari 150% ke 100%
-                1.5f, 1.0f, // Scale Y dari 150% ke 100%
-                Animation.RELATIVE_TO_SELF, 0.5f, // Pivot X di tengah
-                Animation.RELATIVE_TO_SELF, 0.5f  // Pivot Y di tengah
+                1.5f, 1.0f,
+                1.5f, 1.0f,
+                Animation.RELATIVE_TO_SELF, 0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f
         );
         scaleAnim.setDuration(1200);
         
         // Rotate animation (putar halus)
         RotateAnimation rotateAnim = new RotateAnimation(
-                -15f, 0f, // Dari -15 derajat ke 0
+                -15f, 0f,
                 Animation.RELATIVE_TO_SELF, 0.5f,
                 Animation.RELATIVE_TO_SELF, 0.5f
         );
@@ -114,9 +152,10 @@ public class SplashActivity extends Activity {
     }
 
     private void startPulseAnimation() {
-        // Continuous pulse animation
+        if (logo == null) return;
+        
         ScaleAnimation pulseAnim = new ScaleAnimation(
-                1.0f, 1.05f, // Scale naik 5%
+                1.0f, 1.05f,
                 1.0f, 1.05f,
                 Animation.RELATIVE_TO_SELF, 0.5f,
                 Animation.RELATIVE_TO_SELF, 0.5f
@@ -129,183 +168,113 @@ public class SplashActivity extends Activity {
     }
 
     private void startTextAnimation() {
-        // App name animation dengan slide up + fade
-        AnimationSet nameAnimationSet = new AnimationSet(true);
+        // App name animation
+        if (appName != null) {
+            AnimationSet nameAnimationSet = new AnimationSet(true);
+            
+            // Pastikan app name visible
+            appName.setVisibility(View.VISIBLE);
+            appName.setTextColor(Color.WHITE);
+            
+            // Fade in sederhana dulu (tanpa slide yang mungkin error)
+            AlphaAnimation fadeIn = new AlphaAnimation(0f, 1f);
+            fadeIn.setDuration(1500);
+            fadeIn.setStartOffset(800);
+            fadeIn.setFillAfter(true);
+            
+            nameAnimationSet.addAnimation(fadeIn);
+            appName.startAnimation(nameAnimationSet);
+            
+            Log.d("SplashDebug", "AppName animation started");
+        }
         
-        // Slide up dari bawah
-        TranslateAnimation slideUp = new TranslateAnimation(
-                Animation.RELATIVE_TO_SELF, 0f,
-                Animation.RELATIVE_TO_SELF, 0f,
-                Animation.RELATIVE_TO_SELF, 0.5f, // Mulai dari 50% bawah
-                Animation.RELATIVE_TO_SELF, 0f
-        );
-        slideUp.setDuration(1000);
-        slideUp.setStartOffset(500); // Delay setelah logo
-        
-        // Fade in
-        AlphaAnimation fadeIn = new AlphaAnimation(0f, 1f);
-        fadeIn.setDuration(800);
-        fadeIn.setStartOffset(500);
-        
-        nameAnimationSet.addAnimation(slideUp);
-        nameAnimationSet.addAnimation(fadeIn);
-        nameAnimationSet.setInterpolator(new AccelerateDecelerateInterpolator());
-        
-        appName.startAnimation(nameAnimationSet);
-        
-        // Loading text dengan typing effect simulation
-        startTypingEffect();
+        // Loading text animation
+        if (loadingText != null) {
+            // Sederhanakan dulu dengan fade in biasa
+            AlphaAnimation fadeInText = new AlphaAnimation(0f, 1f);
+            fadeInText.setDuration(1000);
+            fadeInText.setStartOffset(1500);
+            fadeInText.setFillAfter(true);
+            
+            loadingText.startAnimation(fadeInText);
+            loadingText.setTextColor(Color.WHITE);
+            
+            Log.d("SplashDebug", "LoadingText animation started");
+            
+            // Typing effect hanya jika text tidak kosong
+            final String originalText = loadingText.getText().toString();
+            if (!originalText.isEmpty()) {
+                startSimpleTypingEffect(originalText);
+            }
+        }
     }
 
-    private void startTypingEffect() {
-        final String originalText = loadingText.getText().toString();
+    private void startSimpleTypingEffect(final String originalText) {
+        if (loadingText == null) return;
+        
         loadingText.setText("");
         
         handler.postDelayed(() -> {
-            // Animate text appearance dengan delay per karakter
             for (int i = 0; i <= originalText.length(); i++) {
                 final int index = i;
                 handler.postDelayed(() -> {
-                    if (index <= originalText.length()) {
+                    if (index <= originalText.length() && loadingText != null) {
                         loadingText.setText(originalText.substring(0, index));
-                        
-                        // Scale animation untuk setiap karakter baru
-                        if (index > 0) {
-                            ScaleAnimation charAnim = new ScaleAnimation(
-                                    1.2f, 1.0f, 1.2f, 1.0f,
-                                    Animation.RELATIVE_TO_SELF, (index-1)/(float)originalText.length(),
-                                    Animation.RELATIVE_TO_SELF, 0.5f
-                            );
-                            charAnim.setDuration(150);
-                            loadingText.startAnimation(charAnim);
-                        }
                     }
-                }, i * 100L); // 100ms delay per karakter
+                }, i * 100L);
             }
-            
-            // Start blinking dots animation setelah text selesai
-            handler.postDelayed(this::startBlinkingDots, originalText.length() * 100L + 300);
-        }, 1500);
-    }
-
-    private void startBlinkingDots() {
-        // Animation untuk blinking dots di akhir loading text
-        AlphaAnimation blinkAnim = new AlphaAnimation(0.3f, 1.0f);
-        blinkAnim.setDuration(500);
-        blinkAnim.setRepeatMode(Animation.REVERSE);
-        blinkAnim.setRepeatCount(Animation.INFINITE);
-        
-        loadingText.startAnimation(blinkAnim);
-    }
-
-    private void startLoadingIndicator() {
-        // Optional: Cek jika ada progress bar di layout
-        try {
-            // Mencoba mencari progress bar dengan ID yang mungkin
-            int progressBarId = getResources().getIdentifier("splash_progress", "id", getPackageName());
-            if (progressBarId != 0) {
-                View progressBar = findViewById(progressBarId);
-                if (progressBar != null) {
-                    RotateAnimation rotate = new RotateAnimation(
-                            0f, 360f,
-                            Animation.RELATIVE_TO_SELF, 0.5f,
-                            Animation.RELATIVE_TO_SELF, 0.5f
-                    );
-                    rotate.setDuration(1000);
-                    rotate.setRepeatCount(Animation.INFINITE);
-                    progressBar.startAnimation(rotate);
-                }
-            }
-        } catch (Exception e) {
-            // Jika tidak ada progress bar, tidak perlu melakukan apa-apa
-            e.printStackTrace();
-        }
+        }, 1800);
     }
 
     private void scheduleNavigation() {
         handler.postDelayed(() -> {
-            // Exit animation sebelum pindah activity
             startExitAnimation();
         }, SPLASH_DURATION);
     }
 
     private void startExitAnimation() {
-        // Animation untuk semua elemen sebelum exit
-        AnimationSet exitAnimationSet = new AnimationSet(true);
-        
-        // Fade out semua elemen
-        AlphaAnimation fadeOut = new AlphaAnimation(1f, 0f);
-        fadeOut.setDuration(500);
-        
-        // Scale down sedikit
-        ScaleAnimation scaleDown = new ScaleAnimation(
-                1.0f, 0.95f, 1.0f, 0.95f,
-                Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF, 0.5f
-        );
-        scaleDown.setDuration(500);
-        
-        exitAnimationSet.addAnimation(fadeOut);
-        exitAnimationSet.addAnimation(scaleDown);
-        
-        // Apply ke container atau root view
+        // Fade out root view
         View rootView = findViewById(android.R.id.content);
-        rootView.startAnimation(exitAnimationSet);
-        
-        exitAnimationSet.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {}
+        if (rootView != null) {
+            AlphaAnimation fadeOut = new AlphaAnimation(1f, 0f);
+            fadeOut.setDuration(500);
+            fadeOut.setFillAfter(true);
             
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                navigateToMain();
-            }
+            fadeOut.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {}
+                
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    navigateToMain();
+                }
+                
+                @Override
+                public void onAnimationRepeat(Animation animation) {}
+            });
             
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
-        });
+            rootView.startAnimation(fadeOut);
+        } else {
+            navigateToMain();
+        }
     }
 
     private void navigateToMain() {
         Intent intent = new Intent(SplashActivity.this, MainActivity.class);
         startActivity(intent);
-        
-        // Enhanced transition animation
-        try {
-            // Coba gunakan animasi custom jika ada
-            int fadeInId = getResources().getIdentifier("fade_in_enhanced", "anim", getPackageName());
-            int fadeOutId = getResources().getIdentifier("fade_out_enhanced", "anim", getPackageName());
-            
-            if (fadeInId != 0 && fadeOutId != 0) {
-                overridePendingTransition(fadeInId, fadeOutId);
-            } else {
-                // Fallback ke animasi default
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-            }
-        } catch (Exception e) {
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-        }
-        
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         finish();
     }
 
     @Override
     public void onBackPressed() {
-        // Disable back button dengan feedback visual
-        // Bisa tambahkan shake animation atau toast
-        Animation shake = new TranslateAnimation(-10, 10, 0, 0);
-        shake.setDuration(50);
-        shake.setRepeatCount(3);
-        shake.setRepeatMode(Animation.REVERSE);
-        
-        View rootView = findViewById(android.R.id.content);
-        rootView.startAnimation(shake);
+        // Disable back button
+        // Optional: bisa tambahkan toast atau efek getar
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Cleanup handler untuk mencegah memory leaks
         handler.removeCallbacksAndMessages(null);
     }
 }
