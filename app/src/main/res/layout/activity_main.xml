@@ -1,78 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#1E40AF"> <!-- Warna solid dulu -->
 
-    <!-- WebView Layout (visible when online) -->
+    <!-- Container utama dengan padding -->
     <LinearLayout
-        android:id="@+id/webview_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:visibility="visible">
-
-        <WebView
-            android:id="@+id/activity_main_webview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </LinearLayout>
-
-    <!-- Offline Layout (visible when offline) -->
-    <LinearLayout
-        android:id="@+id/offline_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center"
-        android:padding="24dp"
-        android:visibility="gone"
-        android:background="@color/white">
+        android:padding="40dp">
 
-        <!-- Offline Icon -->
+        <!-- Logo -->
         <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginBottom="24dp"
-            android:src="@android:drawable/ic_dialog_alert"
-            android:tint="@color/primary_blue"
-            android:contentDescription="Offline Icon" />
+            android:id="@+id/splash_logo"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@mipmap/ic_launcher" <!-- PAKAI MIPMAP -->
+            android:contentDescription="Logo App"
+            android:layout_marginBottom="20dp" />
 
-        <!-- Offline Title -->
+        <!-- Text Container dengan background semi transparan - SIMPLE -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:background="#80000000"
+            android:padding="20dp"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp">
+
+            <!-- Welcome Text -->
+            <TextView
+                android:id="@+id/splash_welcome_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Selamat Datang di"
+                android:textColor="#E0FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="italic"
+                android:visibility="gone" />
+
+            <!-- App Name -->
+            <TextView
+                android:id="@+id/splash_app_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Absen-MARSA"
+                android:textColor="#FFFFFF"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:shadowColor="#80000000"
+                android:shadowDx="2"
+                android:shadowDy="2"
+                android:shadowRadius="4" />
+
+            <!-- Full Name -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Aplikasi Presensi SMK MAARIF 9"
+                android:textColor="#B3FFFFFF"
+                android:textSize="12sp"
+                android:layout_marginTop="5dp" />
+
+        </LinearLayout>
+
+        <!-- Loading Text -->
         <TextView
-            android:id="@+id/offline_title"
+            android:id="@+id/splash_loading_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/offline_title"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:layout_marginBottom="8dp" />
+            android:text="Memuat aplikasi..."
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:layout_marginTop="40dp"
+            android:shadowColor="#80000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2" />
 
-        <!-- Offline Message -->
-        <TextView
-            android:id="@+id/offline_message"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/offline_message"
-            android:textSize="16sp"
-            android:textColor="@color/text_grey"
-            android:gravity="center"
-            android:layout_marginBottom="32dp" />
-
-        <!-- Retry Button -->
-        <Button
-            android:id="@+id/retry_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/retry_button"
-            android:textSize="16sp"
-            android:paddingStart="32dp"
-            android:paddingEnd="32dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:background="@drawable/btn_primary"
-            android:textColor="@color/white" />
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/splash_progress"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="20dp"
+            android:indeterminateTint="#22D3EE" />
 
     </LinearLayout>
 
