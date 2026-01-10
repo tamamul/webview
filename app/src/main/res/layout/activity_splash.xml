@@ -1,68 +1,149 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1E40AF"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="20dp">
+    android:background="@drawable/splash_background_gradient">
 
-    <!-- Logo -->
-    <ImageView
-        android:id="@+id/splash_logo"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:src="@mipmap/ic_launcher"
-        android:layout_marginBottom="30dp" />
+    <!-- Animated background overlay -->
+    <View
+        android:id="@+id/splash_background_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/splash_overlay" />
 
-    <!-- App Name -->
-    <TextView
-        android:id="@+id/splash_app_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Absen-MARSA"
-        android:textColor="#FFFFFF"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="10dp" />
+    <!-- Main content container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="40dp">
 
-    <!-- Subtitle -->
-    <TextView
-        android:id="@+id/splash_app_subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="SMK MAARIF 9 KEBUMEN"
-        android:textColor="#CCFFFFFF"
-        android:textSize="14sp"
-        android:layout_marginBottom="40dp" />
+        <!-- Logo container with glow effect -->
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp">
 
-    <!-- Loading Text -->
-    <TextView
-        android:id="@+id/splash_loading_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Menyiapkan aplikasi..."
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:layout_marginBottom="20dp" />
+            <!-- Glow effect behind logo -->
+            <View
+                android:layout_width="180dp"
+                android:layout_height="180dp"
+                android:layout_gravity="center"
+                android:background="@drawable/logo_glow" />
 
-    <!-- Progress Bar -->
-    <ProgressBar
-        android:id="@+id/splash_progress"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="200dp"
-        android:layout_height="8dp"
-        android:max="100"
-        android:progress="0" />
+            <!-- App Logo -->
+            <ImageView
+                android:id="@+id/splash_logo"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center"
+                android:src="@mipmap/ic_launcher_foreground"
+                android:contentDescription="App Logo"
+                android:elevation="8dp" />
 
-    <!-- Version -->
-    <TextView
-        android:id="@+id/splash_version_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="v1.0.0"
-        android:textColor="#88FFFFFF"
-        android:textSize="11sp"
-        android:layout_marginTop="40dp" />
+        </FrameLayout>
 
-</LinearLayout>
+        <!-- App Name with modern typography -->
+        <TextView
+            android:id="@+id/splash_app_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ABSEN-MARSA"
+            android:textColor="#FFFFFF"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:shadowColor="#80000000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="4"
+            android:layout_marginBottom="8dp" />
+
+        <!-- School Name/Subtitle -->
+        <TextView
+            android:id="@+id/splash_app_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SMK MAARIF 9 KEBUMEN"
+            android:textColor="#B3FFFFFF"
+            android:textSize="14sp"
+            android:letterSpacing="0.03"
+            android:layout_marginBottom="40dp" />
+
+        <!-- Loading progress section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="20dp">
+
+            <!-- Loading text with dynamic messages -->
+            <TextView
+                android:id="@+id/splash_loading_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Menyiapkan aplikasi..."
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:layout_marginBottom="20dp"
+                android:gravity="center" />
+
+            <!-- Modern progress bar -->
+            <ProgressBar
+                android:id="@+id/splash_progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="200dp"
+                android:layout_height="8dp"
+                android:progressTint="#22D3EE"
+                android:progressBackgroundTint="#4A5568"
+                android:max="100"
+                android:progress="0"
+                android:elevation="4dp" />
+
+            <!-- Progress percentage -->
+            <TextView
+                android:id="@+id/splash_progress_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0%"
+                android:textColor="#88FFFFFF"
+                android:textSize="12sp"
+                android:layout_marginTop="8dp" />
+
+        </LinearLayout>
+
+        <!-- Bottom info section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="auto"
+            android:layout_marginBottom="20dp">
+
+            <!-- App version -->
+            <TextView
+                android:id="@+id/splash_version_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="v1.0.0"
+                android:textColor="#88FFFFFF"
+                android:textSize="11sp" />
+
+            <!-- Copyright -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="© 2024 SMK MAARIF 9"
+                android:textColor="#66FFFFFF"
+                android:textSize="10sp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>
