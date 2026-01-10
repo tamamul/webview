@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/splash_background"> <!-- atau @color jika mau sederhana -->
+    android:background="@drawable/splash_background_gradient">
 
-    <!-- Container utama dengan padding -->
+    <!-- Animated background overlay -->
+    <View
+        android:id="@+id/splash_background_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/splash_overlay" />
+
+    <!-- Main content container -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -12,85 +20,129 @@
         android:gravity="center"
         android:padding="40dp">
 
-        <!-- Logo -->
-        <ImageView
-            android:id="@+id/splash_logo"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:src="@drawable/ic_launcher" <!-- pastikan ini ada -->
-            android:contentDescription="Logo App"
-            android:layout_marginBottom="20dp" />
-
-        <!-- Text Container dengan background semi transparan -->
-        <LinearLayout
+        <!-- Logo container with glow effect -->
+        <FrameLayout
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp">
+
+            <!-- Glow effect behind logo -->
+            <View
+                android:layout_width="180dp"
+                android:layout_height="180dp"
+                android:layout_gravity="center"
+                android:background="@drawable/logo_glow" />
+
+            <!-- App Logo -->
+            <ImageView
+                android:id="@+id/splash_logo"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center"
+                android:src="@mipmap/ic_launcher_foreground"
+                android:contentDescription="App Logo"
+                android:elevation="8dp" />
+
+        </FrameLayout>
+
+        <!-- App Name with modern typography -->
+        <TextView
+            android:id="@+id/splash_app_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ABSEN-MARSA"
+            android:textColor="#FFFFFF"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:shadowColor="#80000000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="4"
+            android:layout_marginBottom="8dp" />
+
+        <!-- School Name/Subtitle -->
+        <TextView
+            android:id="@+id/splash_app_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SMK MAARIF 9 KEBUMEN"
+            android:textColor="#B3FFFFFF"
+            android:textSize="14sp"
+            android:letterSpacing="0.03"
+            android:layout_marginBottom="40dp" />
+
+        <!-- Loading progress section -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:background="#80000000" <!-- background gelap untuk kontras -->
-            android:padding="20dp"
-            android:paddingHorizontal="30dp"
-            android:backgroundTint="#40000000"
-            android:backgroundTintMode="src_over">
+            android:layout_marginTop="20dp">
 
-            <!-- Welcome Text -->
+            <!-- Loading text with dynamic messages -->
             <TextView
-                android:id="@+id/splash_welcome_text"
+                android:id="@+id/splash_loading_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/splash_welcome"
-                android:textColor="#E0FFFFFF" <!-- Putih transparan -->
+                android:text="Menyiapkan aplikasi..."
+                android:textColor="#FFFFFF"
                 android:textSize="16sp"
-                android:textStyle="italic"
-                android:visibility="gone" /> <!-- Sembunyikan dulu -->
+                android:layout_marginBottom="20dp"
+                android:gravity="center" />
 
-            <!-- App Name - PASTIKAN ID INI -->
+            <!-- Modern progress bar -->
+            <ProgressBar
+                android:id="@+id/splash_progress"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="200dp"
+                android:layout_height="8dp"
+                android:progressTint="#22D3EE"
+                android:progressBackgroundTint="#4A5568"
+                android:max="100"
+                android:progress="0"
+                android:elevation="4dp" />
+
+            <!-- Progress percentage -->
             <TextView
-                android:id="@+id/splash_app_name"
+                android:id="@+id/splash_progress_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/splash_app_name"
-                android:textColor="#FFFFFFFF" <!-- PUTIH SOLID -->
-                android:textSize="32sp"
-                android:textStyle="bold"
-                android:shadowColor="#80000000"
-                android:shadowDx="2"
-                android:shadowDy="2"
-                android:shadowRadius="4" />
-
-            <!-- Full Name -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_full_name"
-                android:textColor="#B3FFFFFF"
+                android:text="0%"
+                android:textColor="#88FFFFFF"
                 android:textSize="12sp"
-                android:layout_marginTop="5dp" />
+                android:layout_marginTop="8dp" />
 
         </LinearLayout>
 
-        <!-- Loading Text - DI LUAR CONTAINER AGAR JELAS -->
-        <TextView
-            android:id="@+id/splash_loading_text"
-            android:layout_width="wrap_content"
+        <!-- Bottom info section -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/splash_loading_text"
-            android:textColor="#FFFFFFFF" <!-- PUTIH SOLID -->
-            android:textSize="14sp"
-            android:layout_marginTop="40dp"
-            android:shadowColor="#80000000"
-            android:shadowDx="1"
-            android:shadowDy="1"
-            android:shadowRadius="2" />
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="auto"
+            android:layout_marginBottom="20dp">
 
-        <!-- Progress Bar (Opsional) -->
-        <ProgressBar
-            android:id="@+id/splash_progress"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="20dp"
-            android:indeterminateTint="#22D3EE" <!-- Warna cyan terang -->
-            android:visibility="visible" />
+            <!-- App version -->
+            <TextView
+                android:id="@+id/splash_version_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="v1.0.0"
+                android:textColor="#88FFFFFF"
+                android:textSize="11sp" />
+
+            <!-- Copyright -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="© 2024 SMK MAARIF 9"
+                android:textColor="#66FFFFFF"
+                android:textSize="10sp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
