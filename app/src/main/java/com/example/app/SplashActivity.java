@@ -1,3 +1,4 @@
+// SplashActivity.java - PROGRAMMATIC LAYOUT
 package com.example.app;
 
 import android.app.Activity;
@@ -5,9 +6,13 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Gravity;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -17,14 +22,6 @@ public class SplashActivity extends Activity {
     private ProgressBar progressBar;
     private TextView loadingText;
     private int progressStatus = 0;
-    
-    private String[] loadingMessages = {
-        "Menyiapkan aplikasi...",
-        "Memuat modul presensi...", 
-        "Menyambungkan ke server...",
-        "Siap digunakan!"
-    };
-    private int messageIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,74 +32,126 @@ public class SplashActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         
-        setContentView(R.layout.activity_splash);
+        // Buat layout secara programmatic
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.parseColor("#1E40AF"));
         
-        // Initialize views
-        ImageView logo = findViewById(R.id.splash_logo);
-        TextView appName = findViewById(R.id.splash_app_name);
-        TextView subtitle = findViewById(R.id.splash_app_subtitle);
-        loadingText = findViewById(R.id.splash_loading_text);
-        progressBar = findViewById(R.id.splash_progress);
-        TextView versionText = findViewById(R.id.splash_version_text);
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setGravity(Gravity.CENTER);
+        container.setPadding(40, 40, 40, 40);
         
-        // Set text colors
+        // Logo
+        ImageView logo = new ImageView(this);
+        logo.setImageResource(R.mipmap.ic_launcher);
+        LinearLayout.LayoutParams logoParams = new LinearLayout.LayoutParams(120, 120);
+        logoParams.bottomMargin = 30;
+        logo.setLayoutParams(logoParams);
+        
+        // App name
+        TextView appName = new TextView(this);
+        appName.setText("Absen-MARSA");
         appName.setTextColor(Color.WHITE);
+        appName.setTextSize(28);
+        appName.setTypeface(null, android.graphics.Typeface.BOLD);
+        LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        nameParams.bottomMargin = 10;
+        appName.setLayoutParams(nameParams);
+        
+        // Subtitle
+        TextView subtitle = new TextView(this);
+        subtitle.setText("SMK MAARIF 9 KEBUMEN");
         subtitle.setTextColor(Color.parseColor("#CCFFFFFF"));
+        subtitle.setTextSize(14);
+        LinearLayout.LayoutParams subParams = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        subParams.bottomMargin = 40;
+        subtitle.setLayoutParams(subParams);
+        
+        // Loading text
+        loadingText = new TextView(this);
+        loadingText.setText("Menyiapkan aplikasi...");
         loadingText.setTextColor(Color.WHITE);
-        versionText.setTextColor(Color.parseColor("#88FFFFFF"));
+        loadingText.setTextSize(16);
+        LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        textParams.bottomMargin = 20;
+        loadingText.setLayoutParams(textParams);
         
-        // Start animations
-        startAnimations();
+        // Progress bar
+        progressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        progressBar.setMax(100);
+        progressBar.setProgress(0);
+        LinearLayout.LayoutParams progressParams = new LinearLayout.LayoutParams(200, 8);
+        progressParams.bottomMargin = 40;
+        progressBar.setLayoutParams(progressParams);
         
-        // Start progress simulation
-        startProgressSimulation();
+        // Version
+        TextView version = new TextView(this);
+        version.setText("v1.0.0");
+        version.setTextColor(Color.parseColor("#88FFFFFF"));
+        version.setTextSize(11);
         
-        // Navigate to MainActivity after 4 seconds
+        // Add all views
+        container.addView(logo);
+        container.addView(appName);
+        container.addView(subtitle);
+        container.addView(loadingText);
+        container.addView(progressBar);
+        container.addView(version);
+        
+        root.addView(container, new FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        ));
+        
+        setContentView(root);
+        
+        // Start progress animation
+        startProgressAnimation();
+        
+        // Navigate after 4 seconds
         handler.postDelayed(() -> {
-            Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-            startActivity(intent);
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            startActivity(new Intent(this, MainActivity.class));
             finish();
         }, 4000);
     }
     
-    private void startAnimations() {
-        // Simple fade in for logo
-        ImageView logo = findViewById(R.id.splash_logo);
-        TextView appName = findViewById(R.id.splash_app_name);
-        TextView subtitle = findViewById(R.id.splash_app_subtitle);
-        
-        logo.setAlpha(0f);
-        appName.setAlpha(0f);
-        subtitle.setAlpha(0f);
-        loadingText.setAlpha(0f);
-        progressBar.setAlpha(0f);
-        
-        logo.animate().alpha(1f).setDuration(1000).start();
-        appName.animate().alpha(1f).setDuration(800).setStartDelay(300).start();
-        subtitle.animate().alpha(1f).setDuration(600).setStartDelay(600).start();
-        loadingText.animate().alpha(1f).setDuration(500).setStartDelay(900).start();
-        progressBar.animate().alpha(1f).setDuration(400).setStartDelay(1200).start();
-    }
-    
-    private void startProgressSimulation() {
+    private void startProgressAnimation() {
         new Thread(() -> {
-            while (progressStatus < 100) {
-                progressStatus += 1;
+            String[] messages = {
+                "Menyiapkan aplikasi...",
+                "Memuat modul presensi...",
+                "Menyambungkan ke server...",
+                "Siap digunakan!"
+            };
+            
+            for (int i = 0; i <= 100; i++) {
+                progressStatus = i;
                 
-                // Update progress bar on UI thread
                 handler.post(() -> {
                     progressBar.setProgress(progressStatus);
                     
-                    // Update loading message every 25%
-                    if (progressStatus % 25 == 0 && messageIndex < loadingMessages.length) {
-                        loadingText.setText(loadingMessages[messageIndex]);
-                        messageIndex++;
+                    if (progressStatus < 25) {
+                        loadingText.setText(messages[0]);
+                    } else if (progressStatus < 50) {
+                        loadingText.setText(messages[1]);
+                    } else if (progressStatus < 75) {
+                        loadingText.setText(messages[2]);
+                    } else {
+                        loadingText.setText(messages[3]);
                     }
                 });
                 
                 try {
-                    Thread.sleep(40); // 40ms per 1% = 4 seconds total
+                    Thread.sleep(40);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -112,6 +161,6 @@ public class SplashActivity extends Activity {
     
     @Override
     public void onBackPressed() {
-        // Disable back button
+        // Disable back
     }
 }
