@@ -1,88 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#1E40AF">
+    android:layout_height="match_parent">
 
     <LinearLayout
+        android:id="@+id/webview_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <WebView
+            android:id="@+id/activity_main_webview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/offline_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center"
-        android:padding="40dp">
-
-        <ImageView
-            android:id="@+id/splash_logo"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:src="@mipmap/ic_launcher"
-            android:contentDescription="Logo App"
-            android:layout_marginBottom="20dp" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:background="#80000000"
-            android:padding="20dp"
-            android:paddingLeft="30dp"
-            android:paddingRight="30dp">
-
-            <TextView
-                android:id="@+id/splash_welcome_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Selamat Datang di"
-                android:textColor="#E0FFFFFF"
-                android:textSize="16sp"
-                android:textStyle="italic"
-                android:visibility="gone" />
-
-            <TextView
-                android:id="@+id/splash_app_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Absen-MARSA"
-                android:textColor="#FFFFFF"
-                android:textSize="32sp"
-                android:textStyle="bold"
-                android:shadowColor="#80000000"
-                android:shadowDx="2"
-                android:shadowDy="2"
-                android:shadowRadius="4" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Aplikasi Presensi SMK MAARIF 9"
-                android:textColor="#B3FFFFFF"
-                android:textSize="12sp"
-                android:layout_marginTop="5dp" />
-
-        </LinearLayout>
+        android:visibility="gone">
 
         <TextView
-            android:id="@+id/splash_loading_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Memuat aplikasi..."
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:layout_marginTop="40dp"
-            android:shadowColor="#80000000"
-            android:shadowDx="1"
-            android:shadowDy="1"
-            android:shadowRadius="2" />
+            android:id="@+id/offline_title"
+            android:text="Tidak ada koneksi"
+            android:textSize="18sp" />
 
-        <ProgressBar
-            android:id="@+id/splash_progress"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="20dp"
-            android:indeterminate="true"
-            android:indeterminateTint="#22D3EE" />
+        <TextView
+            android:id="@+id/offline_message"
+            android:text="Periksa internet Anda" />
 
+        <Button
+            android:id="@+id/retry_button"
+            android:text="Coba Lagi" />
     </LinearLayout>
 
 </FrameLayout>
