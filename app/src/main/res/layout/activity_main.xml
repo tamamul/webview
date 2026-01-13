@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -10,7 +11,7 @@
         <WebView
             android:id="@+id/activity_main_webview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" />
     </LinearLayout>
 
     <LinearLayout
@@ -23,15 +24,15 @@
 
         <TextView
             android:id="@+id/offline_title"
-            android:text="Tidak Ada Koneksi"/>
+            android:text="Tidak Ada Koneksi Internet" />
 
         <TextView
             android:id="@+id/offline_message"
-            android:text="Periksa koneksi internet"/>
+            android:text="Periksa koneksi internet Panjenengan" />
 
         <Button
             android:id="@+id/retry_button"
-            android:text="Coba Lagi"/>
+            android:text="Coba Lagi" />
     </LinearLayout>
 
 </FrameLayout>
