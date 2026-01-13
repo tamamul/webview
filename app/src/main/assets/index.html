@@ -1,11 +1,354 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-</head>
-<body style="font-family: monospace">
-    REPLACE THIS FILE WITH YOUR OWN INDEX.HTML
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Layanan SMK MA'ARIF 9 KEBUMEN</title>
+  <meta name="description" content="Portal resmi layanan digital SMK Ma'arif 9 Kebumen. Akses absensi, SPMB, dan informasi resmi." />  <style>
+:root {
+  --primary: #1e40af;
+  --primary-dark: #1e3a8a;
+  --secondary: #0f172a;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --text-muted: #475569;
+  --glass: rgba(255,255,255,.18);
+  --blur: blur(14px);
+  --ring: 0 0 0 6px rgba(37,99,235,.15);
+}
+
+/* ===== DARK MODE ===== */
+[data-theme="dark"] body {
+  background: #020617;
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] header {
+  background:
+    radial-gradient(1000px 400px at top, rgba(37,99,235,.25), transparent),
+    linear-gradient(135deg, #020617, #020617);
+}
+
+[data-theme="dark"] .card {
+  background:
+    linear-gradient(#020617, #020617) padding-box,
+    linear-gradient(135deg, rgba(37,99,235,.35), transparent) border-box;
+  box-shadow: 0 20px 40px rgba(0,0,0,.6);
+}
+
+[data-theme="dark"] .card p {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] footer {
+  background: #020617;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .status-bar {
+  background: rgba(2,6,23,.6);
+  border-color: rgba(255,255,255,.12);
+}
+
+/* ===== RESET ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: #0f172a;
+  min-height: 100vh;
+  line-height: 1.6;
+  transition: background .3s, color .3s;
+}
+
+/* ===== HEADER ===== */
+header {
+  background:
+    radial-gradient(1200px 400px at top, rgba(255,255,255,.15), transparent),
+    linear-gradient(135deg, var(--primary), #2563eb);
+  color: #fff;
+  padding: 90px 20px 70px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+header h1 {
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+}
+
+header p {
+  opacity: .95;
+  max-width: 760px;
+  margin: auto;
+}
+
+/* ===== TOGGLE ===== */
+.toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255,255,255,.2);
+  border: none;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: .85rem;
+}
+
+/* ===== STATUS BAR ===== */
+.status-bar {
+  margin-top: 30px;
+  display: inline-flex;
+  gap: 12px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  border: 1px solid rgba(255,255,255,.25);
+  cursor: pointer;
+  transition: .35s ease;
+}
+
+.status-bar:hover {
+  background: rgba(255,255,255,.28);
+  transform: scale(1.03);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+}
+
+.status-bar.active .dot {
+  animation: pulse 1.2s infinite;
+}
+
+.status-bar.error .dot {
+  background: var(--danger);
+  box-shadow: 0 0 10px var(--danger);
+}
+
+/* ===== MAIN ===== */
+main {
+  max-width: 1200px;
+  margin: auto;
+  padding: 60px 20px;
+}
+
+.section-title {
+  font-size: 1.6rem;
+  margin-bottom: 25px;
+  border-left: 6px solid var(--primary);
+  padding-left: 14px;
+}
+
+/* ===== CARDS ===== */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 22px;
+  margin-bottom: 70px;
+}
+
+.card {
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    linear-gradient(135deg, rgba(37,99,235,.35), transparent) border-box;
+  border-radius: 22px;
+  padding: 32px;
+  border: 1px solid transparent;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  transition: .35s ease;
+  position: relative;
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 55px rgba(0,0,0,.18);
+}
+
+.card h3 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.card p {
+  font-size: .95rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+/* ===== BUTTON FIX (INI PENTING) ===== */
+.card a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--primary), #2563eb);
+  padding: 12px 22px;
+  border-radius: 14px;
+  font-weight: 600;
+  color: #ffffff;           /* FIX UTAMA */
+  text-decoration: none;    /* FIX UTAMA */
+  transition: .25s;
+}
+
+.card a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(37,99,235,.35);
+}
+
+/* ===== BADGE ===== */
+.badge {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  font-size: 18px;
+  color: var(--success);
+  text-shadow: 0 0 6px currentColor;
+}
+
+.badge.down {
+  color: var(--danger);
+}
+
+/* ===== FOOTER ===== */
+footer {
+  background: var(--secondary);
+  color: #cbd5f5;
+  text-align: center;
+  padding: 40px 20px;
+  font-size: .9rem;
+}
+
+footer small {
+  opacity: .8;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  header h1 {
+    font-size: 1.9rem;
+  }
+}
+
+/* ===== ANIMATION ===== */
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(34,197,94,.7); }
+  70% { box-shadow: 0 0 0 12px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+</style>
+  	
+  
+  
+  </head>
+<body>
+<header>
+  <button class="toggle" onclick="toggleTheme()">🌓 Mode</button>
+  <h1>Portal Layanan SMK MA'ARIF 9 KEBUMEN</h1>
+  <p>Pusat akses sistem informasi, layanan daring, dan pengumuman resmi.</p>
+ <div class="status-bar" id="statusBar">
+  <div class="dot" id="statusDot"></div>
+  <span id="statusText">Memeriksa status layanan…</span>
+</div>
+</header><main>
+  <section>
+    <h2 class="section-title">Akses Cepat Layanan</h2>
+    <div class="cards">
+      <div class="card" data-service="absensi">
+        <span class="badge" id="badge-absensi">●</span>
+        <h3>Absensi Online</h3>
+        <p>Sistem kehadiran guru dan siswa berbasis lokasi dan waktu.</p>
+        <a href="https://absensi.smk-maarif9kebumen.com">Buka Layanan</a>
+      </div>
+      <div class="card" data-service="spmb">
+        <span class="badge" id="badge-spmb">●</span>
+        <h3>SPMB Online</h3>
+        <p>Penerimaan peserta didik baru terintegrasi dan transparan.</p>
+        <a href="https://marsa26.smk-maarif9kebumen.com">Buka Layanan</a>
+      </div>
+      <div class="card" data-service="profil">
+        <span class="badge" id="badge-profil">●</span>
+        <h3>Website Profil</h3>
+        <p>Informasi kelembagaan, berita, dan kegiatan resmi.</p>
+        <a href="https://smkmaarif9kebumen.sch.id">Buka Website</a>
+      </div>
+      <div class="card" data-service="berita">
+        <span class="badge" id="badge-berita">●</span>
+        <h3>Portal Berita</h3>
+        <p>Berita dan publikasi kegiatan sekolah.</p>
+        <a href="https://marsa9.com">Buka Website</a>
+      </div>
+    </div>
+  </section>
+</main><footer>
+  <p>© 2026 Portal Layanan Digital Resmi</p>
+  <small>Dikelola oleh Tim Media & Teknologi Informasi SMK Ma'arif 9 Kebumen</small>
+</footer>
+	
+
+<script>
+const services = {
+  absensi: 'https://absensi.smk-maarif9kebumen.com',
+  spmb: 'https://marsa26.smk-maarif9kebumen.com',
+  profil: 'https://smkmaarif9kebumen.sch.id',
+  berita: 'https://marsa9.com'
+};
+
+const statusBar  = document.getElementById('statusBar');
+const statusText = document.getElementById('statusText');
+const statusDot  = document.getElementById('statusDot');
+
+async function checkAllServices() {
+  statusText.textContent = 'Memeriksa status layanan…';
+
+  let success = 0;
+  const total = Object.keys(services).length;
+
+  await Promise.all(
+    Object.entries(services).map(([key, url]) =>
+      fetch(url, { mode: 'no-cors' })
+        .then(() => {
+          success++;
+          document.getElementById('badge-' + key)?.classList.remove('down');
+        })
+        .catch(() => {
+          document.getElementById('badge-' + key)?.classList.add('down');
+        })
+    )
+  );
+
+  if (success === total) {
+    statusText.textContent = 'Semua layanan utama aktif dan dapat diakses';
+    statusBar.classList.add('active');
+  } else {
+    statusText.textContent = 'Sebagian layanan sedang bermasalah';
+    statusBar.classList.add('error');
+    statusDot.style.background = 'var(--danger)';
+    statusDot.style.boxShadow = '0 0 8px var(--danger)';
+  }
+}
+
+checkAllServices();
+
+function toggleTheme() {
+  const root = document.documentElement;
+  root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+}
+</script>
+
+
 </body>
 </html>
