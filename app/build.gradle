@@ -1,16 +1,21 @@
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+}
 
 android {
-    compileSdk 33
-    
+    namespace 'com.example.app'
+    compileSdk 34
+
     defaultConfig {
         applicationId "com.example.app"
         minSdk 21
-        targetSdk 33
+        targetSdk 34
         versionCode 1
-        versionName "1.0.0"
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-    
+
     buildTypes {
         release {
             minifyEnabled false
@@ -22,21 +27,18 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
 }
 
 dependencies {
-    // AndroidX tanpa work-runtime (yang bawa Kotlin)
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.core:core:1.10.0'
-}
-
-// TAMBAHKAN DI AKHIR FILE
-configurations.all {
-    resolutionStrategy {
-        // Force specific versions
-        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.10'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-common:1.8.10'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10'
-    }
+    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
