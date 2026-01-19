@@ -1,14 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    
-    <!-- Background color -->
     <item android:drawable="@color/splash_background_color" />
     
-    <!-- Logo di tengah -->
-    <item
-        android:width="120dp"
-        android:height="120dp"
-        android:drawable="@mipmap/ic_launcher"
-        android:gravity="center" />
+    <!-- Logo di tengah (jika ada) -->
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@mipmap/ic_launcher" />
+    </item>
     
+    <!-- Progress bar di bawah -->
+    <item android:top="80dp">
+        <rotate
+            android:fromDegrees="0"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:toDegrees="360">
+            <shape
+                android:innerRadiusRatio="3"
+                android:shape="ring"
+                android:thicknessRatio="8"
+                android:useLevel="false">
+                <gradient
+                    android:centerColor="@android:color/transparent"
+                    android:endColor="@color/progress_color"
+                    android:startColor="@android:color/transparent"
+                    android:type="sweep" />
+            </shape>
+        </rotate>
+    </item>
 </layer-list>
