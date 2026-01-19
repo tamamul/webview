@@ -1,27 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Absen-MARSA</string>
-    <string name="app_full_name">Aplikasi Presensi SMK MAARIF 9</string>
-
-    <!-- Splash Screen - FIX NAMA -->
-    <string name="splash_app_name">Absen-MARSA</string>  <!-- NAMA BARU -->
-    <string name="splash_loading_text">Memuat aplikasi...</string>  <!-- NAMA BARU -->
-    <string name="splash_welcome">Selamat Datang di</string>
-
-    <!-- Notification Messages -->
-    <string name="notification_channel_name">Pengingat Presensi</string>
-    <string name="notification_channel_description">Notifikasi pengingat untuk presensi harian</string>
-    
-    <string name="notification_masuk_title">⏰ Waktunya Absen Masuk!</string>
-    <string name="notification_masuk_body">Ampun kesupen Absen masuk hari ini. Tap untuk membuka aplikasi.</string>
-    
-    <string name="notification_pulang_title">🏠 Waktunya Absen Pulang!</string>
-    <string name="notification_pulang_body">Ampun kesupen absen pulang sederengipun kondur saking sekolah. Tap untuk membuka aplikasi.</string>
-    
-    <string name="notification_tap_action">Buka Aplikasi</string>
-    
-    <!-- Offline Messages -->
+    <string name="app_name">Absen MARSA</string>
     <string name="offline_title">Tidak Ada Koneksi Internet</string>
-    <string name="offline_message">Periksa koneksi internet Panjenengan dan coba lagi.</string>
+    <string name="offline_message">Periksa koneksi internet Anda dan coba lagi.</string>
     <string name="retry_button">Coba Lagi</string>
+    <string name="loading">Memuat...</string>
 </resources>
