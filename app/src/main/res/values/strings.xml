@@ -4,4 +4,12 @@
     <string name="offline_message">Periksa koneksi internet Anda dan coba lagi.</string>
     <string name="retry_button">Coba Lagi</string>
     <string name="loading">Memuat...</string>
+    
+    <!-- Notification Strings -->
+    <string name="notification_masuk_title">Waktu Absen Masuk</string>
+    <string name="notification_masuk_body">Jangan lupa untuk absen masuk hari ini!</string>
+    <string name="notification_pulang_title">Waktu Absen Pulang</string>
+    <string name="notification_pulang_body">Jangan lupa untuk absen pulang hari ini!</string>
+    <string name="notification_channel_description">Notifikasi untuk pengingat absen</string>
+    <string name="notification_channel_name">Pengingat Absen</string>
 </resources>
