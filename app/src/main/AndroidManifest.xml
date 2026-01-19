@@ -16,14 +16,15 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="Absen-MARSA"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+        android:theme="@style/AppTheme"  <!-- Ganti ke AppTheme -->
         android:usesCleartextTraffic="true">
 
         <!-- SPLASH -->
         <activity
             android:name=".SplashActivity"
             android:exported="true"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/SplashTheme">  <!-- Tambahkan theme ini -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
