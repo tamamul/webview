@@ -7,16 +7,9 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-
-    <!-- Colors untuk Splash & Notifikasi -->
-    <color name="primary_blue">#11936A</color>
-    <color name="dark_blue">#1D9468</color>
-    <color name="light_blue">#BBDEFB</color>
-    <color name="splash_background">#1A237E</color>
-    <color name="text_white">#FFFFFF</color>
-    <color name="text_grey">#9E9E9E</color>
-
-    <!-- Notification colors -->
-    <color name="notification_color">#2196F3</color>
-    <color name="notification_text">#212121</color>
+    
+    <!-- Tambahkan warna ini jika belum ada -->
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
 </resources>
